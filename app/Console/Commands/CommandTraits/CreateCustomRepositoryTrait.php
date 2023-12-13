@@ -12,7 +12,7 @@ trait CreateCustomRepositoryTrait
 
     private function getCustomRepositoryContent(string $modelName): string
     {
-        $stubPath = base_path('stubs/repository.stub');
+        $stubPath = base_path('app/Console/ClassTemplates/repository.stub');
         $stubContents = file_get_contents($stubPath);
 
         $replacements = [

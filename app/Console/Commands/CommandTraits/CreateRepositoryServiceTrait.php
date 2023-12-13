@@ -12,8 +12,17 @@ trait CreateRepositoryServiceTrait
 
     private function getServiceContent(string $modelName): string
     {
-        return 'SERVICE FUNC: ' . $modelName . 'Service';
+        $stubPath = base_path('app/Console/ClassTemplates/service.stub');
+        $stubContents = file_get_contents($stubPath);
+
+        $replacements = [
+            '{{ modelName }}' => ucfirst($modelName),
+            '{{ repositoryName }}' => lcfirst($modelName) . 'Repository'
+        ];
+
+        return str_replace(array_keys($replacements), array_values($replacements), $stubContents);
     }
+
 
 
 }

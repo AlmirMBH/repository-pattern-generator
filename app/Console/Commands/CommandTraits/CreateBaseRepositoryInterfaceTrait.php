@@ -12,7 +12,7 @@ trait CreateBaseRepositoryInterfaceTrait
 
     private function getBaseRepositoryInterfaceContent(): string
     {
-        $stubPath = base_path('stubs/base_repository_interface.stub');
+        $stubPath = base_path('app/Console/ClassTemplates/base_repository_interface.stub');
         return file_get_contents($stubPath);
     }
 }
