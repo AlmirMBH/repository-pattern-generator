@@ -4,6 +4,9 @@ namespace App\Console\Commands;
 
 use App\Console\Commands\CommandTraits\CreateDataAccessLayerFoldersTrait;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 class MakeResourceWithRepositoryCommand extends Command
 {
@@ -18,6 +21,7 @@ class MakeResourceWithRepositoryCommand extends Command
     use CommandTraits\CreateRepositoryServiceTrait;
     use CommandTraits\CreateRoutesTrait;
 
+    // TODO: Add option to create a controller, routes, and register the interface in the service provider
     protected $signature = 'make:resource {name : The name of the Eloquent model} {--repository : Include a repository}';
     protected $description = 'Generate an Eloquent model with an optional repository';
 
@@ -48,5 +52,15 @@ class MakeResourceWithRepositoryCommand extends Command
         }
 
         $this->info("Generation complete!");
+
+        Artisan::call('optimize');
+        $this->info('Cache cleared');
+
+        $process = new Process(['composer', 'dump-autoload']);
+        $process->run();
+
+        $process->isSuccessful()
+            ? $this->info('Composer dump-auto-loaded!')
+            : throw new ProcessFailedException($process);
     }
 }
