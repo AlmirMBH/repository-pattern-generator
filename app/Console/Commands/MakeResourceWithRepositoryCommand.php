@@ -4,10 +4,10 @@ namespace App\Console\Commands;
 
 use App\Console\Commands\CommandTraits\CreateDataAccessLayerFoldersTrait;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
 
 class MakeResourceWithRepositoryCommand extends Command
 {
+    use CommandTraits\CreateResourceTrait;
     use CreateDataAccessLayerFoldersTrait;
     use CommandTraits\CreateFilesTrait;
     use CommandTraits\CreateBaseRepositoryTrait;
@@ -30,11 +30,10 @@ class MakeResourceWithRepositoryCommand extends Command
         $modelName = $this->argument('name');
         $includeRepository = $this->option('repository');
 
-        Artisan::call('make:model', ['name' => $modelName]);
-        Artisan::call('make:factory', ['name' => $modelName . 'Factory']);
-        Artisan::call('make:controller', ['name' => $modelName . 'Controller']);
-        Artisan::call('make:migration', ['name' => 'create_' . strtolower($modelName) . 's_table']);
+        // Create model, factory, controller, and migration
+        $this->createResource($modelName);
 
+        // Create repository, service, and interface, and routes
         if ($includeRepository) {
             $this->createDataAccessLayerFolders();
             $this->createBaseRepository();
