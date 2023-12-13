@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\CommandTraits\CreateControllerTrait;
 use App\Console\Commands\CommandTraits\CreateDataAccessLayerFoldersTrait;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -19,6 +20,7 @@ class MakeResourceWithRepositoryCommand extends Command
     use CommandTraits\CreateCustomRepositoryTrait;
     use CommandTraits\CreateRepositoryInterfaceTrait;
     use CommandTraits\CreateRepositoryServiceTrait;
+    use CreateControllerTrait;
     use CommandTraits\CreateRoutesTrait;
 
     // TODO: Add option to create a controller, routes
@@ -26,6 +28,7 @@ class MakeResourceWithRepositoryCommand extends Command
     protected $signature = 'make:resource {name : The name of the Eloquent model} {--repository : Include a repository}';
     protected $description = 'Generate an Eloquent model with an optional repository';
 
+    private string $controllerPath = 'Http/Controllers/Api';
     private string $repositoryPath = 'DataAccessLayer/Repositories';
     private string $servicesPath = 'DataAccessLayer/Services';
     private string $interfacesPath = 'DataAccessLayer/Interfaces';
@@ -53,6 +56,7 @@ class MakeResourceWithRepositoryCommand extends Command
             $this->createCustomRepository($modelName);
             $this->createRepositoryInterface($modelName);
             $this->createCustomService($modelName);
+            $this->createController($modelName);
             $this->createRoutes($modelName);
         }
 

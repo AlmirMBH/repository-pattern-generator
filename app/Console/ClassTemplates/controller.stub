@@ -1,0 +1,68 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\DataAccessLayer\Services\{{ modelName }}Service;
+use Illuminate\Http\JsonResponse;
+
+class {{ modelName }}Controller extends Controller
+{
+
+    public function __construct(
+        private {{ modelName }}Service ${{ serviceName }}
+    ){}
+
+
+    public function create(Request $request): JsonResponse
+    {
+       try {
+            $result = $this->{{ serviceName }}->create{{ modelName }}($request->validated());
+            return response()->json($result, 200);
+        }
+        catch(\Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function index(): JsonResponse
+    {
+        try {
+            $result = $this->{{ serviceName }}->getAll();
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        try {
+            $result = $this->{{ serviceName }}->find{{ modelName }}ById($id);
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function update(int $id, Request $request): JsonResponse
+    {
+        try {
+            $result = $this->{{ serviceName }}->update{{ modelName }}ById($id, $request->validated());
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function delete(int $id): JsonResponse
+    {
+        try {
+            $result = $this->{{ serviceName }}->delete{{ modelName }}ById($id);
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+}
