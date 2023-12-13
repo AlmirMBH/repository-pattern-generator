@@ -12,6 +12,13 @@ trait CreateCustomRepositoryTrait
 
     private function getCustomRepositoryContent(string $modelName): string
     {
-        return 'CUSTOM REPO FUNC: ' . $modelName . 'Repository';
+        $stubPath = base_path('stubs/repository.stub');
+        $stubContents = file_get_contents($stubPath);
+
+        $replacements = [
+            '{{ modelName }}' => ucfirst($modelName),
+        ];
+
+        return str_replace(array_keys($replacements), array_values($replacements), $stubContents);
     }
 }

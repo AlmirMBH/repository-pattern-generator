@@ -10,6 +10,7 @@ class MakeResourceWithRepositoryCommand extends Command
     use CommandTraits\CreateResourceTrait;
     use CreateDataAccessLayerFoldersTrait;
     use CommandTraits\CreateBaseRepositoryInterfaceTrait;
+    use CommandTraits\CreateCustomRepositoryInterfaceTrait;
     use CommandTraits\CreateFilesTrait;
     use CommandTraits\CreateBaseRepositoryTrait;
     use CommandTraits\CreateCustomRepositoryTrait;
@@ -38,6 +39,7 @@ class MakeResourceWithRepositoryCommand extends Command
         if ($includeRepository) {
             $this->createDataAccessLayerFolders();
             $this->createBaseRepositoryInterface();
+            $this->createCustomRepositoryInterface($modelName);
             $this->createBaseRepository();
             $this->createCustomRepository($modelName);
             $this->createRepositoryInterface($modelName);
