@@ -21,7 +21,8 @@ class MakeResourceWithRepositoryCommand extends Command
     use CommandTraits\CreateRepositoryServiceTrait;
     use CommandTraits\CreateRoutesTrait;
 
-    // TODO: Add option to create a controller, routes, and register the interface in the service provider
+    // TODO: Add option to create a controller, routes
+    // TODO: Create RepositoryServiceProvider and bind interfaces to repositories
     protected $signature = 'make:resource {name : The name of the Eloquent model} {--repository : Include a repository}';
     protected $description = 'Generate an Eloquent model with an optional repository';
 
@@ -39,6 +40,10 @@ class MakeResourceWithRepositoryCommand extends Command
         // Create model, factory, controller, and migration
         $this->createResource($modelName);
 
+        // Create provider to bind interfaces to repositories
+        Artisan::call('make:provider', ['name' => 'RepositoryServiceProvider']);
+        $this->info('RepositoryServiceProvider created!');
+
         // Create repository, service, and interface, and routes
         if ($includeRepository) {
             $this->createDataAccessLayerFolders();
@@ -51,10 +56,13 @@ class MakeResourceWithRepositoryCommand extends Command
             $this->createRoutes($modelName);
         }
 
-        $this->info("Generation complete!");
+        $this->clearCache();
+    }
 
+    private function clearCache(): void
+    {
         Artisan::call('optimize');
-        $this->info('Cache cleared');
+        $this->info('Cache cleared!');
 
         $process = new Process(['composer', 'dump-autoload']);
         $process->run();
