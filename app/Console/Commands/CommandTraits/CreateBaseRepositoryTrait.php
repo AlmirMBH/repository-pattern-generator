@@ -13,6 +13,7 @@ trait CreateBaseRepositoryTrait
 
     private function getBaseRepositoryContent(): string
     {
-        return 'BASE REPO FUNC';
+        $stubPath = base_path('stubs/base_repository.stub');
+        return file_get_contents($stubPath);
     }
 }

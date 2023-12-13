@@ -1,0 +1,43 @@
+<?php
+
+namespace App\DataAccessLayer\Repositories;
+
+use Illuminate\Database\Eloquent\Model;
+use App\Repositories\Interfaces\BaseRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
+
+class BaseRepository implements BaseRepositoryInterface
+{
+    public function __construct(protected Model $model)
+    {
+    }
+
+    public function create(array $attributes): Model
+    {
+        return $this->model->create($attributes);
+    }
+
+    public function fetchAll(): Collection
+    {
+        return $this->model->all();
+    }
+
+    public function getById(int $id): Model
+    {
+        return $this->model->findOrFail($id);
+    }
+
+    public function update(int $id, array $params): Model
+    {
+        $model = $this->model->findOrFail($id);
+        $model->update($params);
+
+        return $model;
+    }
+
+    public function delete(int $id): void
+    {
+        $this->model->findOrFail($id)
+            ->delete();
+    }
+}
