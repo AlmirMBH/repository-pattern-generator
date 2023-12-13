@@ -2,15 +2,13 @@
 
 namespace App\Console\Commands\CommandTraits;
 
-trait BaseRepositoryTrait
+trait CreateBaseRepositoryTrait
 {
 
     public function createBaseRepository(): void
     {
         $baseRepositoryContent = $this->getBaseRepositoryContent();
-        $this->createFile($this->repositoryPath, 'BaseRepositoryTrait.php', $baseRepositoryContent);
-
-        $this->info("BaseRepositoryTrait created!");
+        $this->createFile($this->repositoryPath, 'BaseRepository.php', $baseRepositoryContent);
     }
 
     private function getBaseRepositoryContent(): string

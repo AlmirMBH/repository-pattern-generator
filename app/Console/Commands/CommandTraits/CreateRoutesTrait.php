@@ -8,8 +8,6 @@ trait CreateRoutesTrait
     {
         $routesContent = $this->getRoutesContent($modelName);
 //        $this->createFile($this->routesPath, $modelName . 'Routes.php', $routesContent);
-
-        $this->info($modelName . "Routes created!");
     }
 
     private function getRoutesContent(string $modelName): string

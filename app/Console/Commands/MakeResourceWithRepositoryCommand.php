@@ -10,10 +10,10 @@ class MakeResourceWithRepositoryCommand extends Command
 {
     use CreateDataAccessLayerFoldersTrait;
     use CommandTraits\CreateFilesTrait;
-    use CommandTraits\BaseRepositoryTrait;
-    use CommandTraits\CustomRepositoryTrait;
-    use CommandTraits\RepositoryInterfaceTrait;
-    use CommandTraits\RepositoryServiceTrait;
+    use CommandTraits\CreateBaseRepositoryTrait;
+    use CommandTraits\CreateCustomRepositoryTrait;
+    use CommandTraits\CreateRepositoryInterfaceTrait;
+    use CommandTraits\CreateRepositoryServiceTrait;
     use CommandTraits\CreateRoutesTrait;
 
     protected $signature = 'make:resource {name : The name of the Eloquent model} {--repository : Include a repository}';

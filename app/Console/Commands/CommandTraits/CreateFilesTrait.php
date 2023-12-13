@@ -10,7 +10,7 @@ trait CreateFilesTrait
 
         if (!file_exists($fullPath)) {
             file_put_contents($fullPath, $content);
-            $this->info("File created: $fullPath");
+            $this->info("File created: $fileName");
         } else {
             $this->info("File already exists: $fullPath");
         }

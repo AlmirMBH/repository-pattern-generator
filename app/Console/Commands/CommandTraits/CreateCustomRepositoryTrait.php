@@ -2,14 +2,12 @@
 
 namespace App\Console\Commands\CommandTraits;
 
-trait CustomRepositoryTrait
+trait CreateCustomRepositoryTrait
 {
     public function createCustomRepository(string $modelName): void
     {
         $customRepositoryContent = $this->getCustomRepositoryContent($modelName);
         $this->createFile($this->repositoryPath, $modelName . 'Repository.php', $customRepositoryContent);
-
-        $this->info($modelName . "Repository created!");
     }
 
     private function getCustomRepositoryContent(string $modelName): string

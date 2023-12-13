@@ -17,6 +17,7 @@ trait CreateDataAccessLayerFoldersTrait
 
         if (!file_exists($fullPath)) {
             mkdir($fullPath, 0755, true);
+            $this->info("Folder created: $path");
         }
     }
 }
