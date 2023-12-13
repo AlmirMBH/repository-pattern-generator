@@ -40,6 +40,7 @@ class MakeResourceWithRepositoryCommand extends Command
             $this->createCustomRepository($modelName);
             $this->createRepositoryInterface($modelName);
             $this->createCustomService($modelName);
+            $this->createRoutes($modelName);
         }
 
         $this->info("Generation complete!");
