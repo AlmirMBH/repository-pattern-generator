@@ -11,7 +11,6 @@ use Symfony\Component\Process\Process;
 
 class MakeResourceWithRepositoryCommand extends Command
 {
-    use CommandTraits\CreateResourceTrait;
     use CreateDataAccessLayerFoldersTrait;
     use ClassesToCreateDataTrait;
 
@@ -31,14 +30,16 @@ class MakeResourceWithRepositoryCommand extends Command
         $modelName = $this->argument('name');
         $includeRepository = $this->option('repository');
 
-        // Create model, factory, controller, and migration
+        // Create model, factory, and migration
         $this->createResource($modelName);
 
         // Create provider to bind interfaces to repositories
-        Artisan::call('make:provider', ['name' => 'RepositoryServiceProvider']);
-        $this->info('RepositoryServiceProvider created!');
+        if (! $this->classExists("App/Providers/RepositoryServiceProvider.php")) {
+            Artisan::call('make:provider', ['name' => 'RepositoryServiceProvider']);
+            $this->info('RepositoryServiceProvider created!');
+        }
 
-        // Create repository, service, and interface, and routes
+        // Create repository, service and interface, and routes
         if ($includeRepository) {
             $this->createDataAccessLayerFolders();
 
@@ -50,6 +51,35 @@ class MakeResourceWithRepositoryCommand extends Command
         }
 
         $this->clearCache();
+    }
+
+    public function createResource(string $modelName): void
+    {
+        $class = "App/Models/$modelName.php";
+
+        if ($this->classExists($class)) {
+            return;
+        }
+
+        Artisan::call('make:model', [
+            'name' => $modelName,
+            '--factory' => true,
+            '--migration' => true,
+        ]);
+
+        $this->info("Model $modelName and related migration and factory created!");
+    }
+
+    private function classExists(string $class): bool
+    {
+        $classExists = false;
+
+        if (file_exists($class)) {
+            $this->info("Class $class already exists!");
+            $classExists = true;
+        }
+
+        return $classExists;
     }
 
     private function createClasses(array $data): void
@@ -72,7 +102,7 @@ class MakeResourceWithRepositoryCommand extends Command
 
         if (!file_exists($fullPath)) {
             file_put_contents($fullPath, $content);
-            $this->info("File created: $fileName");
+            $this->info("$fileName created!");
         } else {
             $this->info($fileName . " already exists!");
         }
