@@ -74,7 +74,7 @@ class MakeResourceWithRepositoryCommand extends Command
             file_put_contents($fullPath, $content);
             $this->info("File created: $fileName");
         } else {
-            $this->info("File already exists: $fullPath");
+            $this->info($fileName . " already exists!");
         }
     }
 
