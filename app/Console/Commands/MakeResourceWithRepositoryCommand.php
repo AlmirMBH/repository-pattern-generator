@@ -14,7 +14,7 @@ class MakeResourceWithRepositoryCommand extends Command
     use CreateDataAccessLayerFoldersTrait;
     use ClassesToCreateDataTrait;
 
-    // TODO: Adjust controller, create routes, bind interfaces to repositories in RepositoryServiceProvider
+    // TODO: Adjust controller, bind interfaces to repositories in RepositoryServiceProvider
     protected $signature = 'make:resource {name : The name of the Eloquent model} {--repository : Include a repository}';
     protected $description = 'Generate an Eloquent model with an optional repository';
 
@@ -22,7 +22,7 @@ class MakeResourceWithRepositoryCommand extends Command
     private string $repositoryPath = 'DataAccessLayer/Repositories';
     private string $servicesPath = 'DataAccessLayer/Services';
     private string $interfacesPath = 'DataAccessLayer/Interfaces';
-    private string $routesPath = 'routes/api.php';
+    private string $routesPath = 'routes';
 
 
     public function handle(): void
@@ -98,13 +98,19 @@ class MakeResourceWithRepositoryCommand extends Command
 
     private function createFile(string $path, string $fileName, string $content): void
     {
-        $fullPath = app_path("$path/$fileName");
+        $basePath = "$path/$fileName";
+        $appPath = app_path($basePath);
 
-        if (!file_exists($fullPath)) {
-            file_put_contents($fullPath, $content);
-            $this->info("$fileName created!");
+        if ($path === $this->routesPath){
+            file_put_contents($basePath, $content);
+            $this->info("$fileName updated!");
         } else {
-            $this->info($fileName . " already exists!");
+            if (! file_exists($appPath)) {
+                file_put_contents($appPath, $content);
+                $this->info("$fileName created!");
+            } else {
+                $this->info($fileName . " already exists!");
+            }
         }
     }
 

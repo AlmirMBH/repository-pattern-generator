@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands\CommandTraits;
 
+use Illuminate\Support\Str;
+
 trait ClassesToCreateDataTrait
 {
     private function getClassesToCreateData(string $modelName): array
@@ -65,12 +67,30 @@ trait ClassesToCreateDataTrait
             ]
         ];
 
+        $routeGroupController = ucfirst($modelName) . "Controller";
+        $prefix = str_replace('_', '-', Str::snake($modelName));
+        $paramModelName = lcfirst($modelName);
+
         $routes = [
             'class' => 'api.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->routesPath,
-            'stubFile' =>'app/Console/ClassTemplates/routes.stub',
-            'replacements' => []
+            'stubFile' => $this->routesPath . '/api.php',
+            'replacements' => [
+                '// {{ classImport }}' =>
+                    'use App\Http\Controllers\Api\\' . $routeGroupController . ';' . PHP_EOL . '// {{ classImport }}',
+                '// {{ routesPlaceholder }}' => "Route::controller($routeGroupController::class)->group(function () {
+     Route::prefix('$prefix')->group(function () {
+        Route::get('/', 'list')->name('list{$modelName}s');
+        Route::post('/', 'create')->name('create$modelName');
+        Route::get('/{{$paramModelName}Id}', 'show')->name('get$modelName');
+        Route::put('/{{$paramModelName}Id}', 'update')->name('update$modelName');
+        Route::delete('/{{$paramModelName}Id}', 'delete')->name('delete$modelName');
+    });
+});
+
+// {{ routesPlaceholder }}",
+            ],
         ];
 
         return [
@@ -80,7 +100,7 @@ trait ClassesToCreateDataTrait
             $customRepository,
             $repositoryService,
             $controller,
-//            $routes
+            $routes
         ];
     }
 }
