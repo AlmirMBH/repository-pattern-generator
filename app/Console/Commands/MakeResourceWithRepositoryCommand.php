@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Console\Commands\CommandTraits\CreateControllerTrait;
+use App\Console\Commands\CommandTraits\ClassesToCreateDataTrait;
 use App\Console\Commands\CommandTraits\CreateDataAccessLayerFoldersTrait;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -13,18 +13,9 @@ class MakeResourceWithRepositoryCommand extends Command
 {
     use CommandTraits\CreateResourceTrait;
     use CreateDataAccessLayerFoldersTrait;
-    use CommandTraits\CreateBaseRepositoryInterfaceTrait;
-    use CommandTraits\CreateCustomRepositoryInterfaceTrait;
-    use CommandTraits\CreateFilesTrait;
-    use CommandTraits\CreateBaseRepositoryTrait;
-    use CommandTraits\CreateCustomRepositoryTrait;
-    use CommandTraits\CreateRepositoryInterfaceTrait;
-    use CommandTraits\CreateRepositoryServiceTrait;
-    use CreateControllerTrait;
-    use CommandTraits\CreateRoutesTrait;
+    use ClassesToCreateDataTrait;
 
-    // TODO: Add option to create a controller, routes
-    // TODO: Create RepositoryServiceProvider and bind interfaces to repositories
+    // TODO: Adjust controller, create routes, bind interfaces to repositories in RepositoryServiceProvider
     protected $signature = 'make:resource {name : The name of the Eloquent model} {--repository : Include a repository}';
     protected $description = 'Generate an Eloquent model with an optional repository';
 
@@ -50,17 +41,41 @@ class MakeResourceWithRepositoryCommand extends Command
         // Create repository, service, and interface, and routes
         if ($includeRepository) {
             $this->createDataAccessLayerFolders();
-            $this->createBaseRepositoryInterface();
-            $this->createCustomRepositoryInterface($modelName);
-            $this->createBaseRepository();
-            $this->createCustomRepository($modelName);
-            $this->createRepositoryInterface($modelName);
-            $this->createCustomService($modelName);
-            $this->createController($modelName);
-            $this->createRoutes($modelName);
+
+            $filesToCreate = $this->getClassesToCreateData($modelName);
+
+            foreach ($filesToCreate as $data) {
+                $this->createClasses($data);
+            }
         }
 
         $this->clearCache();
+    }
+
+    private function createClasses(array $data): void
+    {
+        $fileToCreateContent = $this->getFileContent($data);
+        $this->createFile($data['path'], $data['class'], $fileToCreateContent);
+    }
+
+    private function getFileContent(array $data): string
+    {
+        $stubPath = base_path($data['stubFile']);
+        $stubContents = file_get_contents($stubPath);
+
+        return str_replace(array_keys($data['replacements']), array_values($data['replacements']), $stubContents);
+    }
+
+    private function createFile(string $path, string $fileName, string $content): void
+    {
+        $fullPath = app_path("$path/$fileName");
+
+        if (!file_exists($fullPath)) {
+            file_put_contents($fullPath, $content);
+            $this->info("File created: $fileName");
+        } else {
+            $this->info("File already exists: $fullPath");
+        }
     }
 
     private function clearCache(): void
