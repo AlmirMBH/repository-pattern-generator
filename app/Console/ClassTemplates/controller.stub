@@ -11,7 +11,7 @@ class {{ modelName }}Controller extends Controller
 {
 
     public function __construct(
-        private {{ modelName }}Service ${{ serviceName }}
+        private readonly {{ modelName }}Service ${{ serviceName }}
     ){}
 
 
@@ -39,7 +39,7 @@ class {{ modelName }}Controller extends Controller
     public function show(int $id): JsonResponse
     {
         try {
-            $result = $this->{{ serviceName }}->find{{ modelName }}ById($id);
+            $result = $this->{{ serviceName }}->get{{ modelName }}ById($id);
             return response()->json($result, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

@@ -81,7 +81,7 @@ trait ClassesToCreateDataTrait
                     'use App\Http\Controllers\Api\\' . $routeGroupController . ';' . PHP_EOL . '// {{ classImport }}',
                 '// {{ routesPlaceholder }}' => "Route::controller($routeGroupController::class)->group(function () {
      Route::prefix('$prefix')->group(function () {
-        Route::get('/', 'list')->name('list{$modelName}s');
+        Route::get('/', 'index')->name('list{$modelName}s');
         Route::post('/', 'create')->name('create$modelName');
         Route::get('/{{$paramModelName}Id}', 'show')->name('get$modelName');
         Route::put('/{{$paramModelName}Id}', 'update')->name('update$modelName');
