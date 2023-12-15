@@ -14,7 +14,12 @@ class MakeResourceWithRepositoryCommand extends Command
     use CreateDataAccessLayerFoldersTrait;
     use ClassesToCreateDataTrait;
 
-    // TODO: Adjust controller, bind interfaces to repositories in RepositoryServiceProvider
+    // TODO: Bind interfaces to repositories in RepositoryServiceProvider, generate CRUD tests
+    // TODO: Move all related files and folders into one folder in Commands entitled ResourceCommand
+    // TODO: Create tests for the resource commands
+    // TODO: Export Postman collection for all endpoints
+    // TODO: Publish clean repo to GitHub
+    // TODO: Write README.md
     protected $signature = 'make:resource {name : The name of the Eloquent model} {--repository : Include a repository}';
     protected $description = 'Generate an Eloquent model with an optional repository';
 
