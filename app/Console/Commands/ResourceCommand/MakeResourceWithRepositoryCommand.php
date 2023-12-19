@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\ResourceCommand;
 
-use App\Console\Commands\CommandTraits\ClassesToCreateDataTrait;
-use App\Console\Commands\CommandTraits\CreateDataAccessLayerFoldersTrait;
+use App\Console\Commands\ResourceCommand\CommandTraits\ClassesToCreateDataTrait;
+use App\Console\Commands\ResourceCommand\CommandTraits\CreateDataAccessLayerFoldersTrait;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -14,12 +16,11 @@ class MakeResourceWithRepositoryCommand extends Command
     use CreateDataAccessLayerFoldersTrait;
     use ClassesToCreateDataTrait;
 
-    // TODO: Bind interfaces to repositories in RepositoryServiceProvider, generate CRUD tests
-    // TODO: Move all related files and folders into one folder in Commands entitled ResourceCommand
-    // TODO: Create tests for the resource commands
+    // TODO: Generate CRUD tests for created models
     // TODO: Export Postman collection for all endpoints
     // TODO: Publish clean repo to GitHub
     // TODO: Write README.md
+    // TODO: Create tests for the resource commands (in package)
     protected $signature = 'make:resource {name : The name of the Eloquent model} {--repository : Include a repository}';
     protected $description = 'Generate an Eloquent model with an optional repository';
 
@@ -27,6 +28,7 @@ class MakeResourceWithRepositoryCommand extends Command
     private string $repositoryPath = 'DataAccessLayer/Repositories';
     private string $servicesPath = 'DataAccessLayer/Services';
     private string $interfacesPath = 'DataAccessLayer/Interfaces';
+    private string $repositoryServiceProviderPath = 'Providers';
     private string $routesPath = 'routes';
 
 
@@ -35,30 +37,27 @@ class MakeResourceWithRepositoryCommand extends Command
         $modelName = $this->argument('name');
         $includeRepository = $this->option('repository');
 
-        // Create model, factory, and migration
-        $this->createResource($modelName);
+        $this->createModelFactoryMigration($modelName);
 
-        // Create provider to bind interfaces to repositories
-        if (! $this->classExists("App/Providers/RepositoryServiceProvider.php")) {
-            Artisan::call('make:provider', ['name' => 'RepositoryServiceProvider']);
-            $this->info('RepositoryServiceProvider created!');
-        }
-
-        // Create repository, service and interface, and routes
         if ($includeRepository) {
             $this->createDataAccessLayerFolders();
 
-            $filesToCreate = $this->getClassesToCreateData($modelName);
+            $classesToCreate = $this->getClassesToCreateData($modelName);
 
-            foreach ($filesToCreate as $data) {
-                $this->createClasses($data);
+            foreach ($classesToCreate as $class) {
+                $this->createClasses($class);
             }
+        }
+
+
+        if (file_exists(app_path('Providers/RepositoryServiceProvider.php'))) {
+            $this->addProviderToConfig();
         }
 
         $this->clearCache();
     }
 
-    public function createResource(string $modelName): void
+    public function createModelFactoryMigration(string $modelName): void
     {
         $class = "App/Models/$modelName.php";
 
@@ -106,16 +105,17 @@ class MakeResourceWithRepositoryCommand extends Command
         $basePath = "$path/$fileName";
         $appPath = app_path($basePath);
 
-        if ($path === $this->routesPath){
+        if (! file_exists($appPath) && $path !== $this->routesPath) {
+            file_put_contents($appPath, $content);
+            $this->info("$fileName created!");
+        } elseif ($path === $this->repositoryServiceProviderPath) { // created once, then updated
+            file_put_contents($appPath, $content);
+            $this->info("$fileName updated!");
+        } elseif ($path === $this->routesPath) { // existing api.php used
             file_put_contents($basePath, $content);
             $this->info("$fileName updated!");
         } else {
-            if (! file_exists($appPath)) {
-                file_put_contents($appPath, $content);
-                $this->info("$fileName created!");
-            } else {
-                $this->info($fileName . " already exists!");
-            }
+            $this->info($fileName . " already exists!");
         }
     }
 
@@ -130,5 +130,44 @@ class MakeResourceWithRepositoryCommand extends Command
         $process->isSuccessful()
             ? $this->info('Composer dump-auto-loaded!')
             : throw new ProcessFailedException($process);
+    }
+
+    private function addProviderToConfig(): void
+    {
+        $repositoryServiceProvider = 'App\Providers\RepositoryServiceProvider';
+
+        $configPath = config_path('app.php');
+
+        // Read the contents of the file
+        $fileContents = file_get_contents($configPath);
+
+        // Define the 'providers' array pattern
+        $pattern = "/'providers' => ServiceProvider::defaultProviders\(\)->merge\(([^)]+)\)/";
+
+        // Find the 'providers' array using the defined pattern
+        if (preg_match($pattern, $fileContents, $matches)) {
+            // Decode the 'providers' array
+            $providersArray = eval('return ' . $matches[1] . ';');
+
+            // Add the new provider without ::class
+            $providersArray[] = $repositoryServiceProvider;
+
+            // Encode the modified array back to string
+            $newProvidersString = '[' . PHP_EOL . implode(',' . PHP_EOL, array_map(function ($provider) {
+                    return '    ' . $provider . '::class';
+                }, $providersArray)) . PHP_EOL . ']';
+
+
+            // Replace the old 'providers' array with the new one in the file contents
+            $fileContents = str_replace($matches[1], $newProvidersString, $fileContents);
+
+            // Write the updated configuration back to the file
+            file_put_contents($configPath, $fileContents);
+
+            $this->info('RepositoryServiceProvider added to config/app.php!');
+        } else {
+            // Handle the case where the 'providers' array was not found
+            $this->info( "Error: Unable to find 'providers' array in the configuration file.");
+        }
     }
 }

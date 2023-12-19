@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\CommandTraits;
+namespace App\Console\Commands\ResourceCommand\CommandTraits;
 
 use Illuminate\Support\Str;
 
@@ -12,7 +12,7 @@ trait ClassesToCreateDataTrait
             'class' => 'BaseRepositoryInterface.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->interfacesPath,
-            'stubFile' =>'app/Console/ClassTemplates/base_repository_interface.stub',
+            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/base_repository_interface.stub',
             'replacements' => []
         ];
 
@@ -20,7 +20,7 @@ trait ClassesToCreateDataTrait
             'class' => $modelName . 'RepositoryInterface.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->interfacesPath,
-            'stubFile' =>'app/Console/ClassTemplates/custom_repository_interface.stub',
+            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/custom_repository_interface.stub',
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName),
             ]
@@ -30,7 +30,7 @@ trait ClassesToCreateDataTrait
             'class' => 'BaseRepository.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->repositoryPath,
-            'stubFile' =>'app/Console/ClassTemplates/base_repository.stub',
+            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/base_repository.stub',
             'replacements' => []
         ];
 
@@ -39,7 +39,7 @@ trait ClassesToCreateDataTrait
             'class' => $modelName . 'Repository.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->repositoryPath,
-            'stubFile' =>'app/Console/ClassTemplates/repository.stub',
+            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/repository.stub',
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName)
             ]
@@ -49,7 +49,7 @@ trait ClassesToCreateDataTrait
             'class' => $modelName . 'Service.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->servicesPath,
-            'stubFile' =>'app/Console/ClassTemplates/service.stub',
+            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/service.stub',
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName),
                 '{{ repositoryName }}' => lcfirst($modelName) . 'Repository'
@@ -60,7 +60,7 @@ trait ClassesToCreateDataTrait
             'class' => $modelName . 'Controller.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->controllerPath,
-            'stubFile' =>'app/Console/ClassTemplates/controller.stub',
+            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/controller.stub',
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName),
                 '{{ serviceName }}' => lcfirst($modelName) . 'Service',
@@ -68,8 +68,9 @@ trait ClassesToCreateDataTrait
         ];
 
         $routeGroupController = ucfirst($modelName) . "Controller";
-        $prefix = str_replace('_', '-', Str::snake($modelName));
+        $routesPrefix = str_replace('_', '-', Str::snake(Str::plural($modelName)));
         $paramModelName = lcfirst($modelName);
+        $routeNamePlural = Str::plural($modelName);
 
         $routes = [
             'class' => 'api.php',
@@ -80,8 +81,8 @@ trait ClassesToCreateDataTrait
                 '// {{ classImport }}' =>
                     'use App\Http\Controllers\Api\\' . $routeGroupController . ';' . PHP_EOL . '// {{ classImport }}',
                 '// {{ routesPlaceholder }}' => "Route::controller($routeGroupController::class)->group(function () {
-     Route::prefix('$prefix')->group(function () {
-        Route::get('/', 'index')->name('list{$modelName}s');
+     Route::prefix('$routesPrefix')->group(function () {
+        Route::get('/', 'index')->name('list$routeNamePlural');
         Route::post('/', 'create')->name('create$modelName');
         Route::get('/{{$paramModelName}Id}', 'show')->name('get$modelName');
         Route::put('/{{$paramModelName}Id}', 'update')->name('update$modelName');
@@ -93,6 +94,24 @@ trait ClassesToCreateDataTrait
             ],
         ];
 
+        $repositoryServiceProvider = [
+            'class' => 'RepositoryServiceProvider.php',
+            'modelName' => $modelName,
+            'path' => $this->repositoryServiceProviderPath,
+            'stubFile' => file_exists(app_path('Providers/RepositoryServiceProvider.php'))
+                ? 'app/Providers/RepositoryServiceProvider.php'
+                : 'app/Console/Commands/ResourceCommand/ClassTemplates/repository_service_provider.stub',
+            'replacements' => [
+                '// {{ interfaceAndRepositoryImports }}' =>
+                'use App\DataAccessLayer\Interfaces\\' . $modelName . 'RepositoryInterface;' . PHP_EOL .
+                'use App\DataAccessLayer\Repositories\\' . $modelName . 'Repository;' . PHP_EOL .
+                '// {{ interfaceAndRepositoryImports }}',
+                '// {{ interfaceRepositoryBinding }}' =>
+                    '$this->app->bind(' . $modelName . 'RepositoryInterface::class,' . $modelName . 'Repository::class);' . PHP_EOL .
+                    '        // {{ interfaceRepositoryBinding }}'
+            ]
+        ];
+
         return [
             $baseRepositoryInterface,
             $customRepositoryInterface,
@@ -100,6 +119,7 @@ trait ClassesToCreateDataTrait
             $customRepository,
             $repositoryService,
             $controller,
+            $repositoryServiceProvider,
             $routes
         ];
     }
