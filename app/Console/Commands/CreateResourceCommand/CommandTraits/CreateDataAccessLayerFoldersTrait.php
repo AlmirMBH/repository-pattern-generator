@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\ResourceCommand\CommandTraits;
+namespace App\Console\Commands\CreateResourceCommand\CommandTraits;
 
 trait CreateDataAccessLayerFoldersTrait
 {

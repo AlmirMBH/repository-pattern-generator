@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Console\Commands\ResourceCommand;
+namespace App\Console\Commands\CreateResourceCommand;
 
-use App\Console\Commands\ResourceCommand\CommandTraits\ClassesToCreateDataTrait;
-use App\Console\Commands\ResourceCommand\CommandTraits\CreateDataAccessLayerFoldersTrait;
+use App\Console\Commands\CreateResourceCommand\CommandTraits\ClassesToCreateDataTrait;
+use App\Console\Commands\CreateResourceCommand\CommandTraits\CreateDataAccessLayerFoldersTrait;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -55,6 +53,12 @@ class MakeResourceWithRepositoryCommand extends Command
         }
 
         $this->clearCache();
+
+        $this->info('Resource created!' . PHP_EOL .
+                          'Add columns to the model, migration and in the factory.' . PHP_EOL .
+                          'Add factory call in the DatabaseSeeder.php file.' . PHP_EOL .
+                          'Run php artisan migrate:fresh --seed to create the table and seed it with data.' .PHP_EOL .
+                          'Use an API tool like Postman to test the endpoints.');
     }
 
     public function createModelFactoryMigration(string $modelName): void
@@ -135,38 +139,24 @@ class MakeResourceWithRepositoryCommand extends Command
     private function addProviderToConfig(): void
     {
         $repositoryServiceProvider = 'App\Providers\RepositoryServiceProvider';
-
         $configPath = config_path('app.php');
-
-        // Read the contents of the file
         $fileContents = file_get_contents($configPath);
 
-        // Define the 'providers' array pattern
         $pattern = "/'providers' => ServiceProvider::defaultProviders\(\)->merge\(([^)]+)\)/";
 
-        // Find the 'providers' array using the defined pattern
         if (preg_match($pattern, $fileContents, $matches)) {
-            // Decode the 'providers' array
             $providersArray = eval('return ' . $matches[1] . ';');
-
-            // Add the new provider without ::class
             $providersArray[] = $repositoryServiceProvider;
 
-            // Encode the modified array back to string
             $newProvidersString = '[' . PHP_EOL . implode(',' . PHP_EOL, array_map(function ($provider) {
                     return '    ' . $provider . '::class';
                 }, $providersArray)) . PHP_EOL . ']';
 
-
-            // Replace the old 'providers' array with the new one in the file contents
             $fileContents = str_replace($matches[1], $newProvidersString, $fileContents);
-
-            // Write the updated configuration back to the file
             file_put_contents($configPath, $fileContents);
 
             $this->info('RepositoryServiceProvider added to config/app.php!');
         } else {
-            // Handle the case where the 'providers' array was not found
             $this->info( "Error: Unable to find 'providers' array in the configuration file.");
         }
     }

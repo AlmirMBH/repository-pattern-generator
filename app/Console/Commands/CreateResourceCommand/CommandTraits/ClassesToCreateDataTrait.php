@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\ResourceCommand\CommandTraits;
+namespace App\Console\Commands\CreateResourceCommand\CommandTraits;
 
 use Illuminate\Support\Str;
 
@@ -12,7 +12,7 @@ trait ClassesToCreateDataTrait
             'class' => 'BaseRepositoryInterface.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->interfacesPath,
-            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/base_repository_interface.stub',
+            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/base_repository_interface.stub',
             'replacements' => []
         ];
 
@@ -20,7 +20,7 @@ trait ClassesToCreateDataTrait
             'class' => $modelName . 'RepositoryInterface.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->interfacesPath,
-            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/custom_repository_interface.stub',
+            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/custom_repository_interface.stub',
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName),
             ]
@@ -30,7 +30,7 @@ trait ClassesToCreateDataTrait
             'class' => 'BaseRepository.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->repositoryPath,
-            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/base_repository.stub',
+            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/base_repository.stub',
             'replacements' => []
         ];
 
@@ -39,7 +39,7 @@ trait ClassesToCreateDataTrait
             'class' => $modelName . 'Repository.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->repositoryPath,
-            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/repository.stub',
+            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/repository.stub',
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName)
             ]
@@ -49,7 +49,7 @@ trait ClassesToCreateDataTrait
             'class' => $modelName . 'Service.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->servicesPath,
-            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/service.stub',
+            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/service.stub',
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName),
                 '{{ repositoryName }}' => lcfirst($modelName) . 'Repository'
@@ -60,7 +60,7 @@ trait ClassesToCreateDataTrait
             'class' => $modelName . 'Controller.php',
             'modelName' => ucfirst($modelName),
             'path' => $this->controllerPath,
-            'stubFile' => 'app/Console/Commands/ResourceCommand/ClassTemplates/controller.stub',
+            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/controller.stub',
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName),
                 '{{ serviceName }}' => lcfirst($modelName) . 'Service',
@@ -100,7 +100,7 @@ trait ClassesToCreateDataTrait
             'path' => $this->repositoryServiceProviderPath,
             'stubFile' => file_exists(app_path('Providers/RepositoryServiceProvider.php'))
                 ? 'app/Providers/RepositoryServiceProvider.php'
-                : 'app/Console/Commands/ResourceCommand/ClassTemplates/repository_service_provider.stub',
+                : 'app/Console/Commands/CreateResourceCommand/ClassTemplates/repository_service_provider.stub',
             'replacements' => [
                 '// {{ interfaceAndRepositoryImports }}' =>
                 'use App\DataAccessLayer\Interfaces\\' . $modelName . 'RepositoryInterface;' . PHP_EOL .
