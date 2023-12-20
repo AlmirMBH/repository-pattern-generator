@@ -8,14 +8,14 @@ trait TestRequestDataTrait
 {
     public function getTestRequestData(string $modelName): array
     {
-        $createRequestData = $this->getRequestData($modelName, 1);
-        $expectedCreateResponseData = $this->getExpectedResponseData($createRequestData);
+        $createRequestData = $this->getRequestData(modelName: $modelName, action: 1);
+        $expectedCreateResponseData = $this->getExpectedResponseData(requestData: $createRequestData);
 
-        $createModelSequenceRequestData  = $this->getRequestData(modelName: $modelName, numberOfModels: 2);
-        $expectedModelSequenceResponseData = $this->getExpectedResponseData($createModelSequenceRequestData);
+        $createModelSequenceRequestData = $this->getRequestData(modelName: $modelName, numberOfModels: 2);
+        $expectedModelSequenceResponseData = $this->getExpectedResponseData(requestData: $createModelSequenceRequestData);
 
-        $updateRequestData = $this->getUpdateRequestData($createRequestData);
-        $expectedUpdateResponseData = $this->getExpectedResponseData($updateRequestData, 'update');
+        $updateRequestData = $this->getRequestData(modelName: $modelName, action: 'update');
+        $expectedUpdateResponseData = $updateRequestData;
 
         return [
             $createRequestData,
@@ -74,6 +74,34 @@ trait TestRequestDataTrait
         return $requestData;
     }
 
+    private function getExpectedResponseData(array $requestData, string $action = ''): array
+    {
+        $updateStringFlag = '';
+        $updateIntFlag = 0;
+
+        if ($action === 'update') {
+            $updateStringFlag = 'updated';
+            $updateIntFlag = 1;
+        }
+
+        foreach ($requestData as $key => $value) {
+            if (is_array($value)) {
+                $requestData[$key]['id'] = $key + 1; // id must start from 1
+            } else {
+                if (is_string($value)) {
+                    $value .= $updateStringFlag;
+                } if (is_int($value)) {
+                    $value += $updateIntFlag;
+                }
+
+                $requestData[$key] = $value;
+                $requestData['id'] = 1; // if not matrix, only one instance created and its id must be 1
+            }
+        }
+
+        return $requestData;
+    }
+
     private function getModelColumnsAndTypes(string $modelName): array
     {
         $columnsWithTypes = [];
@@ -96,44 +124,9 @@ trait TestRequestDataTrait
         return $columnsWithTypes;
     }
 
-    private function getExpectedResponseData(array $requestData, string $action = ''): array
-    {
-        $updateStringFlag = '';
-        $updateIntFlag = 0;
-
-        if ($action === 'update') {
-            $updateStringFlag = 'updated';
-            $updateIntFlag = 1;
-        }
-
-        foreach ($requestData as $key => $value) {
-            if (is_array($value)) {
-                $requestData[$key]['id'] = $key + 1;
-            } else {
-                if (is_string($value)) {
-                    $value .= $updateStringFlag;
-                } if (is_int($value)) {
-                    $value += $updateIntFlag;
-                }
-
-                $requestData[$key] = $value;
-                $requestData['id'] = 1;
-            }
-        }
-
-        return $requestData;
-    }
-
-    private function getUpdateRequestData(array $requestData): array
-    {
-        // TODO: Add flags to the existing values to indicate that they are updated
-        return [
-            'name' => 'test-update',
-        ];
-    }
-
     private function convertArrayToString(array $array): string
     {
+        // the arrays are converted to strings, so that they can replace placeholders in stubs
         $arrayConverted = implode(', ', array_map(function ($key, $value) use ($array) {
             return is_array($value)
                 ? $this->convertArrayToString($value)

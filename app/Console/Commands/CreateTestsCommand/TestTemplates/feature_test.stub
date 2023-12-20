@@ -31,10 +31,9 @@ class {{ modelName }}ApiTest extends TestCase
 
     public function testGet{{ modelNamePlural }}(): void
     {
-        // ADD COLUMNS TO THE SEEDER DYNAMICALLY (2 MODELS)
         {{ modelName }}::factory()
             ->count(2)
-            ->sequence({{ modelSequence }})->createQuietly();
+            ->sequence(...{{ modelSequence }})->createQuietly();
 
         $expectedResponseData = {{ expectedModelSequenceResponseData }};
 
@@ -54,7 +53,6 @@ class {{ modelName }}ApiTest extends TestCase
 
     public function testGet{{ modelName }}(): void
     {
-        // ADD COLUMNS TO THE SEEDER DYNAMICALLY
         ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly({{ createRequestData }});
 
         $expectedCreateResponseData = {{ expectedCreateResponseData }};

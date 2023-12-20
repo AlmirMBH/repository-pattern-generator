@@ -18,11 +18,9 @@ class CreateModelTests extends Command
 
     public function handle(): void
     {
-        // TODO: fetch DB name from model
-        // TODO: if not in the model, fetch database name from migration based on model name
-        // TODO: if no migration, warn user that model migration is required
-        // TODO: fetch columns and their types from the migration
-        // TODO: if no columns warn user that at least one column is required
+        // TODO: Format arrays in the test (indentation)
+        // TODO: mass assignment columns must be specified in the model; otherwise tests will fail
+        // TODO: Explain what column types can be tested
         // TODO: add in the README.md file that the testing DB needs to be set in phpunit.xml and .env.testing
         // TODO: explain that some code might be the same in different commands; the purpose is easy copying and pasting
         // TODO: only what you need
@@ -42,15 +40,6 @@ class CreateModelTests extends Command
             $updateRequestData,
             $expectedUpdateResponseData,
         ] = $this->getTestRequestData($modelName);
-
-//        $createRequestData = $this->getRequestData($modelName, 1);
-//        $expectedCreateResponseData = $this->getExpectedResponseData($createRequestData);
-//
-//        $createModelSequenceRequestData  = $this->getRequestData(modelName: $modelName, numberOfModels: 4);
-//        $expectedModelSequenceResponseData = $this->getExpectedResponseData($createModelSequenceRequestData);
-//
-//        $updateRequestData = $this->getUpdateRequestData($createRequestData);
-//        $expectedUpdateResponseData = $this->getExpectedResponseData($updateRequestData, 'update');
 
         $testData = [
             'class' => ucfirst($modelName) . 'ApiTest.php',
