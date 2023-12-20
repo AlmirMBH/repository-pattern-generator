@@ -14,6 +14,7 @@ class MakeResourceWithRepositoryCommand extends Command
     use CreateDataAccessLayerFoldersTrait;
     use ClassesToCreateDataTrait;
 
+    // TODO: Separate resource (routes, model, controller, migration, factory) from repository
     // TODO: Generate CRUD tests for created models
     // TODO: Export Postman collection for all endpoints
     // TODO: Publish clean repo to GitHub
@@ -45,6 +46,8 @@ class MakeResourceWithRepositoryCommand extends Command
             foreach ($classesToCreate as $class) {
                 $this->createClasses($class);
             }
+        } else {
+            // TODO: create regular controller with CRUD methods and static calls
         }
 
 
@@ -123,19 +126,6 @@ class MakeResourceWithRepositoryCommand extends Command
         }
     }
 
-    private function clearCache(): void
-    {
-        Artisan::call('optimize');
-        $this->info('Cache cleared!');
-
-        $process = new Process(['composer', 'dump-autoload']);
-        $process->run();
-
-        $process->isSuccessful()
-            ? $this->info('Composer dump-auto-loaded!')
-            : throw new ProcessFailedException($process);
-    }
-
     private function addProviderToConfig(): void
     {
         $repositoryServiceProvider = 'App\Providers\RepositoryServiceProvider';
@@ -159,5 +149,18 @@ class MakeResourceWithRepositoryCommand extends Command
         } else {
             $this->info( "Error: Unable to find 'providers' array in the configuration file.");
         }
+    }
+
+    private function clearCache(): void
+    {
+        Artisan::call('optimize');
+        $this->info('Cache cleared!');
+
+        $process = new Process(['composer', 'dump-autoload']);
+        $process->run();
+
+        $process->isSuccessful()
+            ? $this->info('Composer dump-auto-loaded!')
+            : throw new ProcessFailedException($process);
     }
 }

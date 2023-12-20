@@ -1,0 +1,107 @@
+<?php
+
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Tests\TestCase;
+use App\Models\{{ modelName }};
+
+class {{ modelName }}ApiTest extends TestCase
+{
+    use DatabaseMigrations;
+
+
+    public function create{{ modelName }}(): void
+    {
+        $requestData = [];
+        $expectedResponseData = [];
+
+        $response = $this->postJson(
+                uri: route(
+                    name: 'create{{ modelName }}'
+                ),
+                data: $requestData
+            );
+
+        $response->assertStatus(201);
+        $response->assertJson($expectedResponseData);
+        $this->assertDatabaseHas('{{ databaseName }}', $expectedResponseData);
+    }
+
+    public function get{{ modelNamePlural }}(): void
+    {
+        // ADD COLUMNS TO THE SEEDER DYNAMICALLY (2 MODELS)
+        {{ modelName }}::factory()->createQuietly([]);
+
+        $expectedResponseData = [];
+
+        $response = $this->getJson(
+                uri: route(
+                    name: 'get{{ modelNamePlural }}'
+                )
+            );
+
+        $response->assertStatus(200);
+        $response->assertJson($expectedResponseData);
+        $this->assertDatabaseHas('{{ databaseName }}', $expectedResponseData);
+    }
+
+    public function get{{ modelName }}(): void
+    {
+        // ADD COLUMNS TO THE SEEDER DYNAMICALLY
+        ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly([]);
+
+        $expectedResponseData = [];
+
+        $response = $this->getJson(
+                uri: route(
+                    name: 'get{{ modelName }}',
+                    parameters: ['{{ modelVariableName }}Id' => ${{ modelVariableName }}->id]
+                )
+            );
+
+        $response->assertStatus(200);
+        $response->assertJson($expectedResponseData);
+        $this->assertDatabaseHas('{{ databaseName }}', $expectedResponseData);
+    }
+
+    public function update{{ modelName }}(): void
+    {
+        // ADD COLUMNS TO THE SEEDER DYNAMICALLY
+        ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly([]);
+
+        $requestData = [];
+        $expectedResponseData = [];
+
+        $response = $this->putJson(
+                uri: route(
+                    name: 'update{{ modelName }}',
+                    parameters: ['{{ modelVariableName }}Id' => ${{ modelVariableName }}->id]
+                ),
+                data: $requestData
+            );
+
+        $response->assertStatus(200);
+        $response->assertJson($expectedResponseData);
+        $this->assertDatabaseHas('{{ databaseName }}', $expectedResponseData);
+    }
+
+    public function delete{{ modelName }}(): void
+    {
+        // ADD COLUMNS TO THE SEEDER DYNAMICALLY
+        ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly([]);
+
+        $expectedResponseData = [];
+
+        $response = $this->deleteJson(
+                uri: route(
+                    name: 'delete{{ modelName }}',
+                    parameters: ['{{ modelVariableName }}Id' => ${{ modelVariableName }}->id]
+                )
+            );
+
+        $response->assertStatus(204);
+        $response->assertJson($expectedResponseData);
+        $this->assertDatabaseMissing('{{ databaseName }}', $expectedResponseData);
+    }
+}
