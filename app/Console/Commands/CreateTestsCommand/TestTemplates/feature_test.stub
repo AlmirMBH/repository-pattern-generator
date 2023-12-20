@@ -11,10 +11,11 @@ class {{ modelName }}ApiTest extends TestCase
     use DatabaseMigrations;
 
 
-    public function create{{ modelName }}(): void
+    public function testCreate{{ modelName }}(): void
     {
-        $requestData = [];
-        $expectedResponseData = [];
+        $requestData = {{ createRequestData }};
+
+        $expectedCreateResponseData = {{ expectedCreateResponseData }};
 
         $response = $this->postJson(
                 uri: route(
@@ -24,16 +25,18 @@ class {{ modelName }}ApiTest extends TestCase
             );
 
         $response->assertStatus(201);
-        $response->assertJson($expectedResponseData);
-        $this->assertDatabaseHas('{{ databaseName }}', $expectedResponseData);
+        $response->assertJson($expectedCreateResponseData);
+        $this->assertDatabaseHas('{{ databaseName }}', $expectedCreateResponseData);
     }
 
-    public function get{{ modelNamePlural }}(): void
+    public function testGet{{ modelNamePlural }}(): void
     {
         // ADD COLUMNS TO THE SEEDER DYNAMICALLY (2 MODELS)
-        {{ modelName }}::factory()->createQuietly([]);
+        {{ modelName }}::factory()
+            ->count(2)
+            ->sequence({{ modelSequence }})->createQuietly();
 
-        $expectedResponseData = [];
+        $expectedResponseData = {{ expectedModelSequenceResponseData }};
 
         $response = $this->getJson(
                 uri: route(
@@ -43,15 +46,18 @@ class {{ modelName }}ApiTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson($expectedResponseData);
-        $this->assertDatabaseHas('{{ databaseName }}', $expectedResponseData);
+
+        foreach ($expectedResponseData as $dBRecord) {
+                    $this->assertDatabaseHas('{{ databaseName }}', $dBRecord);
+                }
     }
 
-    public function get{{ modelName }}(): void
+    public function testGet{{ modelName }}(): void
     {
         // ADD COLUMNS TO THE SEEDER DYNAMICALLY
-        ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly([]);
+        ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly({{ createRequestData }});
 
-        $expectedResponseData = [];
+        $expectedCreateResponseData = {{ expectedCreateResponseData }};
 
         $response = $this->getJson(
                 uri: route(
@@ -61,37 +67,34 @@ class {{ modelName }}ApiTest extends TestCase
             );
 
         $response->assertStatus(200);
-        $response->assertJson($expectedResponseData);
-        $this->assertDatabaseHas('{{ databaseName }}', $expectedResponseData);
+        $response->assertJson($expectedCreateResponseData);
+        $this->assertDatabaseHas('{{ databaseName }}', $expectedCreateResponseData);
     }
 
-    public function update{{ modelName }}(): void
+    public function testUpdate{{ modelName }}(): void
     {
-        // ADD COLUMNS TO THE SEEDER DYNAMICALLY
-        ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly([]);
+        ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly({{ createRequestData }});
 
-        $requestData = [];
-        $expectedResponseData = [];
+        $updateRequestData = {{ updateRequestData }};
+
+        $expectedUpdateResponseData = {{ expectedUpdateResponseData }};
 
         $response = $this->putJson(
                 uri: route(
                     name: 'update{{ modelName }}',
                     parameters: ['{{ modelVariableName }}Id' => ${{ modelVariableName }}->id]
                 ),
-                data: $requestData
+                data: $updateRequestData
             );
 
         $response->assertStatus(200);
-        $response->assertJson($expectedResponseData);
-        $this->assertDatabaseHas('{{ databaseName }}', $expectedResponseData);
+        $response->assertJson($expectedUpdateResponseData);
+        $this->assertDatabaseHas('{{ databaseName }}', $expectedUpdateResponseData);
     }
 
-    public function delete{{ modelName }}(): void
+    public function testDelete{{ modelName }}(): void
     {
-        // ADD COLUMNS TO THE SEEDER DYNAMICALLY
-        ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly([]);
-
-        $expectedResponseData = [];
+        ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly({{ createRequestData }});
 
         $response = $this->deleteJson(
                 uri: route(
@@ -101,7 +104,6 @@ class {{ modelName }}ApiTest extends TestCase
             );
 
         $response->assertStatus(204);
-        $response->assertJson($expectedResponseData);
-        $this->assertDatabaseMissing('{{ databaseName }}', $expectedResponseData);
+        $this->assertDatabaseMissing('{{ databaseName }}', {{ expectedCreateResponseData }});
     }
 }

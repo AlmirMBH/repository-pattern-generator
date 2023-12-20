@@ -7,6 +7,10 @@ use Illuminate\Support\Str;
 
 class CreateModelTests extends Command
 {
+    use CommandTraits\ModelValidationTrait;
+    use CommandTraits\TestRequestDataTrait;
+
+
     protected $signature = 'make:tests {name : The name of the Eloquent model}';
     protected $description = 'Command description';
 
@@ -22,7 +26,31 @@ class CreateModelTests extends Command
         // TODO: add in the README.md file that the testing DB needs to be set in phpunit.xml and .env.testing
         // TODO: explain that some code might be the same in different commands; the purpose is easy copying and pasting
         // TODO: only what you need
-        $modelName = $this->argument('name');
+        $modelName = ucfirst($this->argument('name'));
+
+        $modelMigrationColumnsExist = $this->modelMigrationColumnsExist($modelName);
+
+        if (! $modelMigrationColumnsExist) {
+            return;
+        }
+
+        [
+            $createRequestData,
+            $expectedCreateResponseData,
+            $createModelSequenceRequestData,
+            $expectedModelSequenceResponseData,
+            $updateRequestData,
+            $expectedUpdateResponseData,
+        ] = $this->getTestRequestData($modelName);
+
+//        $createRequestData = $this->getRequestData($modelName, 1);
+//        $expectedCreateResponseData = $this->getExpectedResponseData($createRequestData);
+//
+//        $createModelSequenceRequestData  = $this->getRequestData(modelName: $modelName, numberOfModels: 4);
+//        $expectedModelSequenceResponseData = $this->getExpectedResponseData($createModelSequenceRequestData);
+//
+//        $updateRequestData = $this->getUpdateRequestData($createRequestData);
+//        $expectedUpdateResponseData = $this->getExpectedResponseData($updateRequestData, 'update');
 
         $testData = [
             'class' => ucfirst($modelName) . 'ApiTest.php',
@@ -33,6 +61,15 @@ class CreateModelTests extends Command
                 '{{ modelName }}' => ucfirst($modelName),
                 '{{ modelVariableName }}' => lcfirst($modelName),
                 '{{ modelNamePlural }}' => Str::plural($modelName),
+
+                '{{ createRequestData }}' => $this->convertArrayToString($createRequestData),
+                '{{ expectedCreateResponseData }}' => $this->convertArrayToString($expectedCreateResponseData),
+
+                '{{ modelSequence }}' => $this->convertArrayToString($createModelSequenceRequestData),
+                '{{ expectedModelSequenceResponseData }}' => $this->convertArrayToString($expectedModelSequenceResponseData),
+
+                '{{ updateRequestData }}' => $this->convertArrayToString($updateRequestData),
+                '{{ expectedUpdateResponseData }}' => $this->convertArrayToString($expectedUpdateResponseData),
                 '{{ databaseName }}' => Str::snake(Str::plural($modelName)),
             ]
         ];
@@ -53,6 +90,7 @@ class CreateModelTests extends Command
 
         return str_replace(array_keys($data['replacements']), array_values($data['replacements']), $stubContents);
     }
+
     private function createFile(string $path, string $fileName, string $content): void
     {
         $basePath = "$path/$fileName";
