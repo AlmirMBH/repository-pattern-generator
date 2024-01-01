@@ -34,7 +34,7 @@ trait TestRequestDataTrait
         $updateIntFlag = 0;
 
         if ($action === 'update') {
-            $updateStringFlag = 'updated';
+            $updateStringFlag = '-updated';
             $updateIntFlag = 1;
         }
 
@@ -80,7 +80,7 @@ trait TestRequestDataTrait
         $updateIntFlag = 0;
 
         if ($action === 'update') {
-            $updateStringFlag = 'updated';
+            $updateStringFlag = '-updated';
             $updateIntFlag = 1;
         }
 

@@ -30,7 +30,7 @@ class Constants
      * File names
      */
     public const EXISTING_ROUTES = 'routes/api.php';
-    public const EXISTING_REPOSITORY_SERVICE_PROVIDER = 'Providers/RepositoryServiceProvider.php'; // TODO: add 'app'
+    public const EXISTING_REPOSITORY_SERVICE_PROVIDER = 'app/Providers/RepositoryServiceProvider.php'; // TODO: add 'app'
 
     /**
      * Console messages

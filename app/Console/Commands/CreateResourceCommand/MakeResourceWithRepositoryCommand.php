@@ -17,12 +17,11 @@ class MakeResourceWithRepositoryCommand extends Command
     use ClassesToCreateDataTrait;
 
     // TODO: Prevent multiple insertion into the app.php
-    // TODO: Convert RepositoryServiceProvider app_path to base_path in Constants and relevant files
-    // TODO: Check how route placeholders are added the first time
     // TODO: Enable multiple data types in tests (e.g. string, int, bool, etc.)
-    // TODO: Format arrays in the test stub (indentation)
-    // TODO: Add route to fetch query logs (pagination, sorting, filtering, etc.);
+    // TODO: Add route to fetch query logs (pagination, sorting, filtering, etc.); generate middleware and route in it
     // TODO: Define the key variables in .env and add log channel dynamically
+    // TODO: Check how route placeholders are added the first time
+    // TODO: Format arrays in the test stub (indentation)
     // TODO: Export Postman collection for all endpoints
     // TODO: Add PHPDoc to all classes
     // TODO: Create tests for the resource commands (in package)
@@ -52,7 +51,7 @@ class MakeResourceWithRepositoryCommand extends Command
             $this->createFile($class, $stubFileWithContents, $modelName);
         }
 
-        if (file_exists(app_path(Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER))) {
+        if (file_exists(base_path(Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER))) {
             $this->addProviderToConfig();
         }
 
