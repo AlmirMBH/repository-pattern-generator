@@ -4,15 +4,21 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\{{ modelName }};
+use App\DataAccessLayer\Services\{{ modelName }}Service;
 use Illuminate\Http\JsonResponse;
 
 class {{ modelName }}Controller extends Controller
 {
+
+    public function __construct(
+        private readonly {{ modelName }}Service ${{ serviceName }}
+    ){}
+
+
     public function create(Request $request): JsonResponse
     {
        try {
-            $result = {{ modelName }}::create($request->all());
+            $result = $this->{{ serviceName }}->create{{ modelName }}($request->all());
             return response()->json($result, 201);
         }
         catch(\Exception $e){
@@ -23,7 +29,7 @@ class {{ modelName }}Controller extends Controller
     public function index(): JsonResponse
     {
         try {
-            $result = {{ modelName }}::all();
+            $result = $this->{{ serviceName }}->getAll();
             return response()->json($result, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -33,7 +39,7 @@ class {{ modelName }}Controller extends Controller
     public function show(int $id): JsonResponse
     {
         try {
-            $result = {{ modelName }}::find($id);
+            $result = $this->{{ serviceName }}->get{{ modelName }}ById($id);
             return response()->json($result, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -43,8 +49,7 @@ class {{ modelName }}Controller extends Controller
     public function update(int $id, Request $request): JsonResponse
     {
         try {
-            $result = {{ modelName }}::findOrFail($id);
-            $result->update($request->all());
+            $result = $this->{{ serviceName }}->update{{ modelName }}ById($id, $request->all());
             return response()->json($result, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -54,7 +59,7 @@ class {{ modelName }}Controller extends Controller
     public function delete(int $id): JsonResponse
     {
         try {
-            $result = {{ modelName }}::findOrFail($id)->delete();
+            $result = $this->{{ serviceName }}->delete{{ modelName }}ById($id);
             return response()->json($result, 204);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

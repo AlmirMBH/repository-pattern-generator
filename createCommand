@@ -1,0 +1,34 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]; then
+    echo "This command requires three parameters: $0 <name> <includeRepository> <framework>"
+    exit 1
+fi
+
+name=$1
+includeRepository=$2
+framework=$(echo "$3" | tr '[:upper:]' '[:lower:]')
+
+if [ "$framework" == "laravel" ]; then
+    if [ -f artisan ] && [ -f composer.json ]; then
+        php artisan make:resource "$name" --repository
+    else
+        echo "Make sure your framework is $framework!"
+    fi
+elif [ "$framework" == "symfony" ]; then
+    if [ -f bin/console ] && [ -f composer.json ] && [ -f symfony.lock ]; then
+        framework="symfony"
+        echo "Executing some code for Symfony framework..."
+    else
+        echo "Make sure your framework is $framework!"
+    fi
+elif [ "$framework" == "yii" ]; then
+    if [ -f bin/console ] && [ -f composer.json ] && [ -f yii ]; then
+        framework="yii"
+        echo "Executing some code for Yii framework..."
+    else
+        echo "Make sure your framework is $framework!"
+    fi
+else
+    echo "Unsupported framework: $framework"
+fi

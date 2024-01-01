@@ -11,19 +11,13 @@ class CreateModelTests extends Command
     use CommandTraits\TestRequestDataTrait;
 
 
-    protected $signature = 'make:tests {name : The name of the Eloquent model}';
-    protected $description = 'Command description';
+    protected $signature = 'make:tests {name : The name of the Eloquent model the tests will be created for}';
+    protected $description = 'Feature tests for the created model';
 
     private string $testPath = 'tests/Feature';
 
     public function handle(): void
     {
-        // TODO: Format arrays in the test (indentation)
-        // TODO: mass assignment columns must be specified in the model; otherwise tests will fail
-        // TODO: Explain what column types can be tested
-        // TODO: add in the README.md file that the testing DB needs to be set in phpunit.xml and .env.testing
-        // TODO: explain that some code might be the same in different commands; the purpose is easy copying and pasting
-        // TODO: only what you need
         $modelName = ucfirst($this->argument('name'));
 
         $modelMigrationColumnsExist = $this->modelMigrationColumnsExist($modelName);

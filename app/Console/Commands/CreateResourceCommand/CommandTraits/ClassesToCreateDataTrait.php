@@ -2,65 +2,76 @@
 
 namespace App\Console\Commands\CreateResourceCommand\CommandTraits;
 
+use App\Console\Commands\CreateResourceCommand\Constants\Constants;
 use Illuminate\Support\Str;
 
 trait ClassesToCreateDataTrait
 {
-    private function getClassesToCreateData(string $modelName): array
+    private function getDataToCreateClasses(string $modelName, bool $includeRepository): array
     {
         $baseRepositoryInterface = [
-            'class' => 'BaseRepositoryInterface.php',
+            'name' => 'BaseRepositoryInterface.php',
             'modelName' => ucfirst($modelName),
-            'path' => $this->interfacesPath,
-            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/base_repository_interface.stub',
+            'path' => Constants::INTERFACES_PATH,
+            'stubFile' => Constants::BASE_REPOSITORY_INTERFACE_STUB,
             'replacements' => []
         ];
 
         $customRepositoryInterface = [
-            'class' => $modelName . 'RepositoryInterface.php',
+            'name' => $modelName . 'RepositoryInterface.php',
             'modelName' => ucfirst($modelName),
-            'path' => $this->interfacesPath,
-            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/custom_repository_interface.stub',
+            'path' => Constants::INTERFACES_PATH,
+            'stubFile' => Constants::CUSTOM_REPOSITORY_INTERFACE_STUB,
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName),
             ]
         ];
 
         $baseRepository = [
-            'class' => 'BaseRepository.php',
+            'name' => 'BaseRepository.php',
             'modelName' => ucfirst($modelName),
-            'path' => $this->repositoryPath,
-            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/base_repository.stub',
+            'path' => Constants::REPOSITORY_PATH,
+            'stubFile' => Constants::BASE_REPOSITORY_STUB,
             'replacements' => []
         ];
 
-
         $customRepository = [
-            'class' => $modelName . 'Repository.php',
+            'name' => $modelName . 'Repository.php',
             'modelName' => ucfirst($modelName),
-            'path' => $this->repositoryPath,
-            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/repository.stub',
+            'path' => Constants::REPOSITORY_PATH,
+            'stubFile' => Constants::CUSTOM_REPOSITORY_STUB,
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName)
             ]
         ];
 
         $repositoryService = [
-            'class' => $modelName . 'Service.php',
+            'name' => $modelName . 'Service.php',
             'modelName' => ucfirst($modelName),
-            'path' => $this->servicesPath,
-            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/service.stub',
+            'path' => Constants::SERVICES_PATH,
+            'stubFile' => Constants::REPOSITORY_SERVICE_STUB,
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName),
                 '{{ repositoryName }}' => lcfirst($modelName) . 'Repository'
             ]
         ];
 
-        $controller = [
-            'class' => $modelName . 'Controller.php',
+        $repositoryController = [
+            'name' => $modelName . 'Controller.php',
             'modelName' => ucfirst($modelName),
-            'path' => $this->controllerPath,
-            'stubFile' => 'app/Console/Commands/CreateResourceCommand/ClassTemplates/controller.stub',
+            'path' => Constants::CONTROLLER_PATH,
+            'stubFile' => Constants::REPOSITORY_CONTROLLER_STUB,
+            'replacements' => [
+                '{{ modelName }}' => ucfirst($modelName),
+                '{{ serviceName }}' => lcfirst($modelName) . 'Service',
+            ]
+        ];
+
+        $controller = [
+            'name' => $modelName . 'Controller.php',
+            'modelName' => ucfirst($modelName),
+            'path' => Constants::CONTROLLER_PATH,
+            'stubFile' => Constants::CONTROLLER_STUB,
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName),
                 '{{ serviceName }}' => lcfirst($modelName) . 'Service',
@@ -73,10 +84,10 @@ trait ClassesToCreateDataTrait
         $routeNamePlural = Str::plural($modelName);
 
         $routes = [
-            'class' => 'api.php',
+            'name' => 'api.php',
             'modelName' => ucfirst($modelName),
-            'path' => $this->routesPath,
-            'stubFile' => $this->routesPath . '/api.php',
+            'path' => Constants::ROUTES_PATH,
+            'stubFile' => Constants::EXISTING_ROUTES,
             'replacements' => [
                 '// {{ classImport }}' =>
                     'use App\Http\Controllers\Api\\' . $routeGroupController . ';' . PHP_EOL . '// {{ classImport }}',
@@ -95,12 +106,12 @@ trait ClassesToCreateDataTrait
         ];
 
         $repositoryServiceProvider = [
-            'class' => 'RepositoryServiceProvider.php',
+            'name' => 'RepositoryServiceProvider.php',
             'modelName' => $modelName,
-            'path' => $this->repositoryServiceProviderPath,
-            'stubFile' => file_exists(app_path('Providers/RepositoryServiceProvider.php'))
-                ? 'app/Providers/RepositoryServiceProvider.php'
-                : 'app/Console/Commands/CreateResourceCommand/ClassTemplates/repository_service_provider.stub',
+            'path' => Constants::REPOSITORY_SERVICE_PROVIDER_PATH,
+            'stubFile' => file_exists(app_path(Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER))
+                ? 'app/' . Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER
+                : Constants::REPOSITORY_SERVICE_PROVIDER_STUB,
             'replacements' => [
                 '// {{ interfaceAndRepositoryImports }}' =>
                 'use App\DataAccessLayer\Interfaces\\' . $modelName . 'RepositoryInterface;' . PHP_EOL .
@@ -112,15 +123,20 @@ trait ClassesToCreateDataTrait
             ]
         ];
 
-        return [
+        $allData = [
             $baseRepositoryInterface,
             $customRepositoryInterface,
             $baseRepository,
             $customRepository,
             $repositoryService,
-            $controller,
+            $repositoryController,
             $repositoryServiceProvider,
-            $routes
+            $routes,
+            $controller
         ];
+
+        return $includeRepository
+            ? array_slice($allData, 0, 8)
+            : array_slice($allData, 7, 2);
     }
 }
