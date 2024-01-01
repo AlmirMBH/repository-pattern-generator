@@ -100,7 +100,7 @@ trait ClassesToCreateDataTrait
             'name' => 'RepositoryServiceProvider.php',
             'modelName' => $modelName,
             'path' => Constants::REPOSITORY_SERVICE_PROVIDER_PATH,
-            'stubFile' => file_exists(app_path(Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER))
+            'stubFile' => file_exists(base_path(Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER))
                 ? Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER
                 : Constants::REPOSITORY_SERVICE_PROVIDER_STUB,
             'replacements' => [
