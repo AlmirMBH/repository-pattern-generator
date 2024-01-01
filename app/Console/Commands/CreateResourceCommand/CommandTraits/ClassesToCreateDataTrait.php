@@ -101,7 +101,7 @@ trait ClassesToCreateDataTrait
             'modelName' => $modelName,
             'path' => Constants::REPOSITORY_SERVICE_PROVIDER_PATH,
             'stubFile' => file_exists(app_path(Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER))
-                ? 'app/' . Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER
+                ? 'app/' . Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER // TODO: remove the 'app'; add in Constants
                 : Constants::REPOSITORY_SERVICE_PROVIDER_STUB,
             'replacements' => [
                 '// {{ interfaceAndRepositoryImports }}' =>

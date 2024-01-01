@@ -7,11 +7,11 @@ class Constants
     /**
      * Folder names
      */
-    public const CONTROLLER_PATH = 'Http/Controllers/Api';
-    public const REPOSITORY_PATH = 'DataAccessLayer/Repositories';
-    public const SERVICES_PATH = 'DataAccessLayer/Services';
-    public const INTERFACES_PATH = 'DataAccessLayer/Interfaces';
-    public const REPOSITORY_SERVICE_PROVIDER_PATH = 'Providers';
+    public const CONTROLLER_PATH = 'app/Http/Controllers/Api';
+    public const REPOSITORY_PATH = 'app/DataAccessLayer/Repositories';
+    public const SERVICES_PATH = 'app/DataAccessLayer/Services';
+    public const INTERFACES_PATH = 'app/DataAccessLayer/Interfaces';
+    public const REPOSITORY_SERVICE_PROVIDER_PATH = 'app/Providers';
     public const ROUTES_PATH = 'routes';
 
     /**
@@ -30,7 +30,7 @@ class Constants
      * File names
      */
     public const EXISTING_ROUTES = 'routes/api.php';
-    public const EXISTING_REPOSITORY_SERVICE_PROVIDER = 'Providers/RepositoryServiceProvider.php';
+    public const EXISTING_REPOSITORY_SERVICE_PROVIDER = 'Providers/RepositoryServiceProvider.php'; // TODO: add 'app'
 
     /**
      * Console messages

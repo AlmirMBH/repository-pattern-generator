@@ -7,6 +7,7 @@ use App\Console\Commands\CreateResourceCommand\CommandTraits\CreateDataAccessLay
 use App\Console\Commands\CreateResourceCommand\Constants\Constants;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Str;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
@@ -15,8 +16,9 @@ class MakeResourceWithRepositoryCommand extends Command
     use CreateDataAccessLayerFoldersTrait;
     use ClassesToCreateDataTrait;
 
-    // TODO: Check how route placeholders are added the first time and prevent duplicates
-    // TODO: Prevent duplicate entries in the service provider
+    // TODO: Prevent multiple insertion into the app.php
+    // TODO: Convert RepositoryServiceProvider app_path to base_path in Constants and relevant files
+    // TODO: Check how route placeholders are added the first time
     // TODO: Enable multiple data types in tests (e.g. string, int, bool, etc.)
     // TODO: Format arrays in the test stub (indentation)
     // TODO: Add route to fetch query logs (pagination, sorting, filtering, etc.);
@@ -46,8 +48,8 @@ class MakeResourceWithRepositoryCommand extends Command
         $classesToCreate = $this->getDataToCreateClasses($modelName, $includeRepository);
 
         foreach ($classesToCreate as $class) {
-            $fileToCreateContent = $this->getStubFileWithContent($class);
-            $this->createFile($class['path'], $class['name'], $fileToCreateContent);
+            $stubFileWithContents = $this->getStubFileWithContent($class);
+            $this->createFile($class, $stubFileWithContents, $modelName);
         }
 
         if (file_exists(app_path(Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER))) {
@@ -96,23 +98,43 @@ class MakeResourceWithRepositoryCommand extends Command
         return str_replace(array_keys($data['replacements']), array_values($data['replacements']), $stubContents);
     }
 
-    private function createFile(string $path, string $fileName, string $content): void
+    private function createFile(array $class, string $stubFileWithContents, string $modelName): void
     {
+        $path = $class['path'];
+        $fileName = $class['name'];
         $basePath = "$path/$fileName";
-        $appPath = app_path($basePath);
 
-        if (! file_exists($appPath) && $path !== Constants::ROUTES_PATH) {
-            file_put_contents($appPath, $content);
+        if (! file_exists($basePath)) {
+            file_put_contents($basePath, $stubFileWithContents);
             $this->info("$fileName created!");
-        } elseif ($path === Constants::REPOSITORY_SERVICE_PROVIDER_PATH) { // created once, then updated
-            file_put_contents($appPath, $content);
-            $this->info("$fileName updated!");
-        } elseif ($path === Constants::ROUTES_PATH) { // existing api.php used
-            file_put_contents($basePath, $content);
-            $this->info("$fileName updated!");
-        } else {
-            $this->info($fileName . " already exists!");
+            return;
         }
+
+        if ($path === Constants::REPOSITORY_SERVICE_PROVIDER_PATH || $path === Constants::ROUTES_PATH) {
+            if (! $this->dataAlreadyInsertedInFile($class, $modelName)) {
+                file_put_contents($basePath, $stubFileWithContents);
+                $this->info("$fileName updated!");
+            } else {
+                $this->info("Data already inserted in $fileName");
+            }
+            return;
+        }
+
+        $this->info("$fileName already exists!");
+    }
+
+    private function dataAlreadyInsertedInFile(array $class, string $modelName): bool
+    {
+        // Check if the controller is added to api and repository interface to repository service provider
+        $data = $modelName . ($class['path'] === Constants::ROUTES_PATH ? 'Controller' : 'RepositoryInterface');
+
+        $fileContents = file_get_contents(base_path($class['path'] . '/' . $class['name']));
+
+        if (Str::contains($fileContents, $data)){
+            return true;
+        }
+
+        return false;
     }
 
     private function addProviderToConfig(): void
