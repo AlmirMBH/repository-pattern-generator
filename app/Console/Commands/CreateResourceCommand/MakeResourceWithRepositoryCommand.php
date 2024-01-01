@@ -16,7 +16,6 @@ class MakeResourceWithRepositoryCommand extends Command
     use CreateDataAccessLayerFoldersTrait;
     use ClassesToCreateDataTrait;
 
-    // TODO: Prevent multiple insertion into the app.php
     // TODO: Enable multiple data types in tests (e.g. string, int, bool, etc.)
     // TODO: Add route to fetch query logs (pagination, sorting, filtering, etc.); generate middleware and route in it
     // TODO: Define the key variables in .env and add log channel dynamically
@@ -141,6 +140,11 @@ class MakeResourceWithRepositoryCommand extends Command
         $repositoryServiceProvider = 'App\Providers\RepositoryServiceProvider';
         $configPath = config_path('app.php');
         $fileContents = file_get_contents($configPath);
+
+        if (Str::contains($fileContents, $repositoryServiceProvider)) {
+            $this->info('RepositoryServiceProvider already added to config/app.php!');
+            return;
+        }
 
         $pattern = "/'providers' => ServiceProvider::defaultProviders\(\)->merge\(([^)]+)\)/";
 
