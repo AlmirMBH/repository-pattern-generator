@@ -56,22 +56,13 @@ trait ClassesToCreateDataTrait
             ]
         ];
 
-        $repositoryController = [
-            'name' => $modelName . 'Controller.php',
-            'modelName' => ucfirst($modelName),
-            'path' => Constants::CONTROLLER_PATH,
-            'stubFile' => Constants::REPOSITORY_CONTROLLER_STUB,
-            'replacements' => [
-                '{{ modelName }}' => ucfirst($modelName),
-                '{{ serviceName }}' => lcfirst($modelName) . 'Service',
-            ]
-        ];
+        $controllerStubFile = $includeRepository ? Constants::REPOSITORY_CONTROLLER_STUB : Constants::CONTROLLER_STUB;
 
         $controller = [
             'name' => $modelName . 'Controller.php',
             'modelName' => ucfirst($modelName),
             'path' => Constants::CONTROLLER_PATH,
-            'stubFile' => Constants::CONTROLLER_STUB,
+            'stubFile' => $controllerStubFile,
             'replacements' => [
                 '{{ modelName }}' => ucfirst($modelName),
                 '{{ serviceName }}' => lcfirst($modelName) . 'Service',
@@ -123,20 +114,19 @@ trait ClassesToCreateDataTrait
             ]
         ];
 
-        $allData = [
+        $data = [
             $baseRepositoryInterface,
             $customRepositoryInterface,
             $baseRepository,
             $customRepository,
             $repositoryService,
-            $repositoryController,
             $repositoryServiceProvider,
             $routes,
             $controller
         ];
 
         return $includeRepository
-            ? array_slice($allData, 0, 8)
-            : array_slice($allData, 7, 2);
+            ? array_slice($data, 0, 8)
+            : array_slice($data, 6, 2);
     }
 }

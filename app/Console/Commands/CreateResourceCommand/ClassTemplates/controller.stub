@@ -14,8 +14,7 @@ class {{ modelName }}Controller extends Controller
        try {
             $result = {{ modelName }}::create($request->all());
             return response()->json($result, 201);
-        }
-        catch(\Exception $e){
+        } catch(\Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
