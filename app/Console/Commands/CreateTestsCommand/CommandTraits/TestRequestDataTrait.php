@@ -41,27 +41,29 @@ trait TestRequestDataTrait
         $columns = $this->getModelColumnsAndTypes($modelName);
 
         $predefinedColumnValues = [
+            'char' => 'A',
             'varchar' => 'test',
-            'integer' => 1,
-            'boolean' => true,
             'text' => 'test',
+            'longtext' => 'This is a long text!',
+            'tinyint' => 1,
+            'int' => 1,
+            'bigint' => 1,
+            'double' => 1.1,
+            'decimal' => 1.1,
+            'json' => 'json data',
+            'blob' => '\x48\x65\x6C\x6C\x6F\x20\x57\x6F\x72\x6C\x64',
             'date' => '2021-01-01',
             'datetime' => '2021-01-01 00:00:00',
             'timestamp' => '2021-01-01 00:00:00',
-            'float' => 1.1,
-            'decimal' => 1.1,
             'enum' => 'test',
-            'json' => 'test',
-            'jsonb' => 'test',
-            'uuid' => 'test',
-            'ipAddress' => 'test',
         ];
 
         foreach ($columns as $column) {
             $requestData[$column['column_name']] = match ($column['type']) {
-                'varchar', 'text' => $predefinedColumnValues[$column['type']] . $updateStringFlag,
-                'integer', 'float', 'decimal' => $predefinedColumnValues[$column['type']] + $updateIntFlag,
-                'boolean' => $predefinedColumnValues[$column['type']],
+                'varchar', 'text', 'longtext' => $predefinedColumnValues[$column['type']] . $updateStringFlag,
+                'tinyint', 'int', 'bigint', 'double', 'decimal' => $predefinedColumnValues[$column['type']] + $updateIntFlag,
+                'char', 'blob', 'date', 'datetime', 'timestamp' => $predefinedColumnValues[$column['type']],
+                'enum' => $predefinedColumnValues[$column['type']], // TODO: Fetch enum values; add json data type
                 default => '',
             };
         }
@@ -90,7 +92,9 @@ trait TestRequestDataTrait
             } else {
                 if (is_string($value)) {
                     $value .= $updateStringFlag;
-                } if (is_int($value)) {
+                }
+
+                if (is_int($value)) {
                     $value += $updateIntFlag;
                 }
 
@@ -130,7 +134,8 @@ trait TestRequestDataTrait
         $arrayConverted = implode(', ', array_map(function ($key, $value) use ($array) {
             return is_array($value)
                 ? $this->convertArrayToString($value)
-                : "'$key' => '$value'";
+                : "'$key' => " . (is_string($value) ? "'$value'" : $value);
+
         }, array_keys($array), $array));
 
         $arrayConverted = str_replace(', ', ",\n", $arrayConverted);
