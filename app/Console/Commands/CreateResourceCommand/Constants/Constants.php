@@ -24,13 +24,13 @@ class Constants
     public const REPOSITORY_SERVICE_STUB = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/service.stub';
     public const REPOSITORY_CONTROLLER_STUB = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/repository_controller.stub';
     public const CONTROLLER_STUB = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/controller.stub';
-    public const REPOSITORY_SERVICE_PROVIDER_STUB = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/repository_service_provider.stub';
+    public const REPOSITORY_SERVICE_PROVIDER_STUB_PATH = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/repository_service_provider.stub';
 
     /**
      * File names
      */
-    public const EXISTING_ROUTES = 'routes/api.php';
-    public const EXISTING_REPOSITORY_SERVICE_PROVIDER = 'app/Providers/RepositoryServiceProvider.php'; // TODO: add 'app'
+    public const EXISTING_ROUTES_FILE_NAME = 'api.php';
+    public const REPOSITORY_SERVICE_PROVIDER_FILE_NAME = 'RepositoryServiceProvider.php';
 
     /**
      * Console messages

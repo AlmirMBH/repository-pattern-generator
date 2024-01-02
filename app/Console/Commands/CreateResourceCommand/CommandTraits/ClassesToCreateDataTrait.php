@@ -9,6 +9,13 @@ trait ClassesToCreateDataTrait
 {
     private function getDataToCreateClasses(string $modelName, bool $includeRepository): array
     {
+        $controllerStubFile = $includeRepository ? Constants::REPOSITORY_CONTROLLER_STUB : Constants::CONTROLLER_STUB;
+        $existingRepositoryServiceProvider = Constants::REPOSITORY_SERVICE_PROVIDER_PATH . '/' . Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME;
+        $routeGroupController = ucfirst($modelName) . "Controller";
+        $routesPrefix = str_replace('_', '-', Str::snake(Str::plural($modelName)));
+        $paramModelName = lcfirst($modelName);
+        $routeNamePlural = Str::plural($modelName);
+
         $baseRepositoryInterface = [
             'name' => 'BaseRepositoryInterface.php',
             'modelName' => ucfirst($modelName),
@@ -56,8 +63,6 @@ trait ClassesToCreateDataTrait
             ]
         ];
 
-        $controllerStubFile = $includeRepository ? Constants::REPOSITORY_CONTROLLER_STUB : Constants::CONTROLLER_STUB;
-
         $controller = [
             'name' => $modelName . 'Controller.php',
             'modelName' => ucfirst($modelName),
@@ -69,20 +74,13 @@ trait ClassesToCreateDataTrait
             ]
         ];
 
-        $routeGroupController = ucfirst($modelName) . "Controller";
-        $routesPrefix = str_replace('_', '-', Str::snake(Str::plural($modelName)));
-        $paramModelName = lcfirst($modelName);
-        $routeNamePlural = Str::plural($modelName);
-
         $routes = [
-            'name' => 'api.php',
+            'name' => Constants::EXISTING_ROUTES_FILE_NAME,
             'modelName' => ucfirst($modelName),
             'path' => Constants::ROUTES_PATH,
-            'stubFile' => Constants::EXISTING_ROUTES,
-            'replacements' => [
-                '// {{ classImport }}' =>
-                    'use App\Http\Controllers\Api\\' . $routeGroupController . ';' . PHP_EOL . '// {{ classImport }}',
-                '// {{ routesPlaceholder }}' => "Route::controller($routeGroupController::class)->group(function () {
+            'stubFile' => Constants::ROUTES_PATH . '/' . Constants::EXISTING_ROUTES_FILE_NAME,
+            'replacements' => [],
+            'append' => "Route::controller(App\Http\Controllers\Api\\" . $routeGroupController . "::class)->group(function () {
      Route::prefix('$routesPrefix')->group(function () {
         Route::get('/', 'index')->name('get$routeNamePlural');
         Route::post('/', 'create')->name('create$modelName');
@@ -90,19 +88,16 @@ trait ClassesToCreateDataTrait
         Route::put('/{{$paramModelName}Id}', 'update')->name('update$modelName');
         Route::delete('/{{$paramModelName}Id}', 'delete')->name('delete$modelName');
     });
-});
-
-// {{ routesPlaceholder }}",
-            ],
+});",
         ];
 
         $repositoryServiceProvider = [
-            'name' => 'RepositoryServiceProvider.php',
+            'name' => Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME,
             'modelName' => $modelName,
             'path' => Constants::REPOSITORY_SERVICE_PROVIDER_PATH,
-            'stubFile' => file_exists(base_path(Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER))
-                ? Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER
-                : Constants::REPOSITORY_SERVICE_PROVIDER_STUB,
+            'stubFile' => file_exists(base_path($existingRepositoryServiceProvider))
+                ? $existingRepositoryServiceProvider
+                : Constants::REPOSITORY_SERVICE_PROVIDER_STUB_PATH,
             'replacements' => [
                 '// {{ interfaceAndRepositoryImports }}' =>
                 'use App\DataAccessLayer\Interfaces\\' . $modelName . 'RepositoryInterface;' . PHP_EOL .

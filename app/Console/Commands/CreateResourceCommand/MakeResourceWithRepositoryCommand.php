@@ -19,7 +19,6 @@ class MakeResourceWithRepositoryCommand extends Command
     // TODO: Enable multiple data types in tests (e.g. string, int, bool, etc.)
     // TODO: Add route to fetch query logs (pagination, sorting, filtering, etc.); generate middleware and route in it
     // TODO: Define the key variables in .env and add log channel dynamically
-    // TODO: Check how route placeholders are added the first time
     // TODO: Format arrays in the test stub (indentation)
     // TODO: Export Postman collection for all endpoints
     // TODO: Add PHPDoc to all classes
@@ -50,7 +49,7 @@ class MakeResourceWithRepositoryCommand extends Command
             $this->createFile($class, $stubFileWithContents, $modelName);
         }
 
-        if (file_exists(base_path(Constants::EXISTING_REPOSITORY_SERVICE_PROVIDER))) {
+        if (file_exists(base_path(Constants::REPOSITORY_SERVICE_PROVIDER_PATH . '/' . Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME))) {
             $this->addProviderToConfig();
         }
 
@@ -105,20 +104,17 @@ class MakeResourceWithRepositoryCommand extends Command
         if (! file_exists($basePath)) {
             file_put_contents($basePath, $stubFileWithContents);
             $this->info("$fileName created!");
-            return;
-        }
-
-        if ($path === Constants::REPOSITORY_SERVICE_PROVIDER_PATH || $path === Constants::ROUTES_PATH) {
+        } elseif ($class['name'] === Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME || $class['name'] === Constants::EXISTING_ROUTES_FILE_NAME) {
             if (! $this->dataAlreadyInsertedInFile($class, $modelName)) {
-                file_put_contents($basePath, $stubFileWithContents);
+                $class['append'] ? file_put_contents($basePath, $class['append'], FILE_APPEND) : file_put_contents($basePath, $stubFileWithContents);
                 $this->info("$fileName updated!");
             } else {
                 $this->info("Data already inserted in $fileName");
             }
-            return;
         }
-
-        $this->info("$fileName already exists!");
+        else {
+            $this->info("$fileName already exists!");
+        }
     }
 
     private function dataAlreadyInsertedInFile(array $class, string $modelName): bool
