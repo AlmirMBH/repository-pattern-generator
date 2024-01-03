@@ -18,8 +18,6 @@ class CreateResourceWithRepositoryCommand extends Command
 
     // TODO: Add tests, record not found for update, delete, show and all
     // TODO: Enable json and enum columns in the test stub
-    // TODO: Add route to fetch query logs (pagination, sorting, filtering, etc.); generate middleware and route in it
-    // TODO: Define the key variables in .env and add log channel dynamically
     // TODO: Format arrays in the test stub (indentation)
     // TODO: Export Postman collection for all endpoints
     // TODO: Add PHPDoc to all classes
