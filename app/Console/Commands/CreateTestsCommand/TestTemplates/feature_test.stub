@@ -101,7 +101,7 @@ class {{ modelName }}ApiTest extends TestCase
                 )
             );
 
-        $response->assertStatus(204);
+        $response->assertStatus(200);
         $this->assertDatabaseMissing('{{ databaseName }}', {{ expectedCreateResponseData }});
     }
 }

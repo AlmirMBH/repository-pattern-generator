@@ -4,59 +4,38 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection;
 use App\Models\{{ modelName }};
 use Illuminate\Http\JsonResponse;
 
 class {{ modelName }}Controller extends Controller
 {
-    public function create(Request $request): JsonResponse
+    public function create(Request $request): Model
     {
-       try {
-            $result = {{ modelName }}::create($request->all());
-            return response()->json($result, 201);
-        } catch(\Exception $e){
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return {{ modelName }}::create($request->all());
     }
 
-    public function index(): JsonResponse
+    public function index(): Collection
     {
-        try {
-            $result = {{ modelName }}::all();
-            return response()->json($result, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return {{ modelName }}::all();
     }
 
-    public function show(int $id): JsonResponse
+    public function show(int $id): ?Model
     {
-        try {
-            $result = {{ modelName }}::find($id);
-            return response()->json($result, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return {{ modelName }}::findOrFail($id);
     }
 
-    public function update(int $id, Request $request): JsonResponse
+    public function update(int $id, Request $request): ?Model
     {
-        try {
-            $result = {{ modelName }}::findOrFail($id);
-            $result->update($request->all());
-            return response()->json($result, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        $model = {{ modelName }}::findOrFail($id);
+        $model->update($request->all());
+
+        return $model;
     }
 
-    public function delete(int $id): JsonResponse
+    public function delete(int $id): bool
     {
-        try {
-            $result = {{ modelName }}::findOrFail($id)->delete();
-            return response()->json($result, 204);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return {{ modelName }}::findOrFail($id)->delete();
     }
 }

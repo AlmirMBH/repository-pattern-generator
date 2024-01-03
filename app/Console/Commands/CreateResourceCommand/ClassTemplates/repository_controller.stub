@@ -4,65 +4,41 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Collection;
 use App\DataAccessLayer\Services\{{ modelName }}Service;
-use Illuminate\Http\JsonResponse;
 
 class {{ modelName }}Controller extends Controller
 {
 
     public function __construct(
         private readonly {{ modelName }}Service ${{ serviceName }}
-    ){}
-
-
-    public function create(Request $request): JsonResponse
-    {
-       try {
-            $result = $this->{{ serviceName }}->create{{ modelName }}($request->all());
-            return response()->json($result, 201);
-        }
-        catch(\Exception $e){
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+    ) {
     }
 
-    public function index(): JsonResponse
+
+    public function create(Request $request): Model
     {
-        try {
-            $result = $this->{{ serviceName }}->getAll();
-            return response()->json($result, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return $this->{{ serviceName }}->create{{ modelName }}($request->all());
     }
 
-    public function show(int $id): JsonResponse
+    public function index(): Collection
     {
-        try {
-            $result = $this->{{ serviceName }}->get{{ modelName }}ById($id);
-            return response()->json($result, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return $this->{{ serviceName }}->getAll();
     }
 
-    public function update(int $id, Request $request): JsonResponse
+    public function show(int $id): ?Model
     {
-        try {
-            $result = $this->{{ serviceName }}->update{{ modelName }}ById($id, $request->all());
-            return response()->json($result, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return $this->{{ serviceName }}->get{{ modelName }}ById($id);
     }
 
-    public function delete(int $id): JsonResponse
+    public function update(int $id, Request $request): Model
     {
-        try {
-            $result = $this->{{ serviceName }}->delete{{ modelName }}ById($id);
-            return response()->json($result, 204);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        return $this->{{ serviceName }}->update{{ modelName }}ById($id, $request->all());
+    }
+
+    public function delete(int $id): bool
+    {
+        return $this->{{ serviceName }}->delete{{ modelName }}ById($id);
     }
 }

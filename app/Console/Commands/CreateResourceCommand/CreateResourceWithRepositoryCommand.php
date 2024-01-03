@@ -11,12 +11,13 @@ use Illuminate\Support\Str;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
-class MakeResourceWithRepositoryCommand extends Command
+class CreateResourceWithRepositoryCommand extends Command
 {
     use CreateDataAccessLayerFoldersTrait;
     use ClassesToCreateDataTrait;
 
-    // TODO: Enable multiple data types in tests (e.g. string, int, bool, etc.)
+    // TODO: Add tests, record not found for update, delete, show and all
+    // TODO: Enable json and enum columns in the test stub
     // TODO: Add route to fetch query logs (pagination, sorting, filtering, etc.); generate middleware and route in it
     // TODO: Define the key variables in .env and add log channel dynamically
     // TODO: Format arrays in the test stub (indentation)
