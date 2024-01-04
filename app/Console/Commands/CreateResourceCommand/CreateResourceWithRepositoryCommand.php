@@ -40,6 +40,7 @@ class CreateResourceWithRepositoryCommand extends Command
         $modelName = $this->argument('name');
         $includeRepository = $this->option('repository');
 
+        $this->createDataAccessLayerFolders();
         $this->createResource($modelName);
 
         $filesToCreate = $this->getDataToCreateFiles($modelName, $includeRepository);
