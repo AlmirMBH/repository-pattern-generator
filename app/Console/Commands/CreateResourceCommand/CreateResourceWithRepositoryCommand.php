@@ -15,6 +15,7 @@ class CreateResourceWithRepositoryCommand extends Command
 {
     use CreateDataAccessLayerFoldersTrait;
     use ClassesToCreateDataTrait;
+    use CommandTraits\ModelValidationTrait;
 
     // TODO: Add tests, record not found for update, delete, show and all
     // TODO: Enable json and enum columns in the test stub
@@ -39,13 +40,13 @@ class CreateResourceWithRepositoryCommand extends Command
         $modelName = $this->argument('name');
         $includeRepository = $this->option('repository');
 
-        $this->createModelFactoryMigration($modelName);
+        $this->createResource($modelName);
 
-        $classesToCreate = $this->getDataToCreateClasses($modelName, $includeRepository);
+        $filesToCreate = $this->getDataToCreateFiles($modelName, $includeRepository);
 
-        foreach ($classesToCreate as $class) {
-            $stubFileWithContents = $this->getStubFileWithContent($class);
-            $this->createFile($class, $stubFileWithContents, $modelName);
+        foreach ($filesToCreate as $file) {
+            $stubFileWithContents = $this->getStubFileWithContent($file);
+            $this->createFile($file, $stubFileWithContents, $modelName);
         }
 
         if (file_exists(base_path(Constants::REPOSITORY_SERVICE_PROVIDER_PATH . '/' . Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME))) {
@@ -57,33 +58,31 @@ class CreateResourceWithRepositoryCommand extends Command
         $this->info(Constants::RESOURCE_CREATED);
     }
 
-    public function createModelFactoryMigration(string $modelName): void
+    public function createResource(string $modelName): void
     {
-        // TODO: Check if migration and factory exist, not only class
-        if ($this->classExists($modelName)) {
-            return;
+        $modelExists = $this->checkIfModelExists($modelName);
+        $factoryExists = $this->checkIfFactoryExist($modelName);
+        $migrationExists = $this->checkIfMigrationExists($modelName);
+
+        if (! $modelExists) {
+            Artisan::call('make:model', [
+                'name' => $modelName,
+            ]);
         }
 
-        Artisan::call('make:model', [
-            'name' => $modelName,
-            '--factory' => true,
-            '--migration' => true,
-        ]);
-
-        $this->info("Model $modelName and related migration and factory created!");
-    }
-
-    private function classExists(string $modelName): bool
-    {
-        $classExists = false;
-        $class = "App/Models/$modelName.php";
-
-        if (file_exists($class)) {
-            $this->info("Class $class already exists!");
-            $classExists = true;
+        if (! $factoryExists) {
+            Artisan::call('make:factory', [
+                'name' => "{$modelName}Factory",
+                '--model' => $modelName,
+            ]);
         }
 
-        return $classExists;
+        if (! $migrationExists) {
+            $modelName = lcfirst(Str::snake(Str::plural($modelName)));
+            Artisan::call('make:migration', [
+                'name' => "create_{$modelName}_table",
+            ]);
+        }
     }
 
     private function getStubFileWithContent(array $data): string
@@ -94,18 +93,18 @@ class CreateResourceWithRepositoryCommand extends Command
         return str_replace(array_keys($data['replacements']), array_values($data['replacements']), $stubContents);
     }
 
-    private function createFile(array $class, string $stubFileWithContents, string $modelName): void
+    private function createFile(array $file, string $stubFileWithContents, string $modelName): void
     {
-        $path = $class['path'];
-        $fileName = $class['name'];
+        $path = $file['path'];
+        $fileName = $file['name'];
         $basePath = "$path/$fileName";
 
         if (! file_exists($basePath)) {
             file_put_contents($basePath, $stubFileWithContents);
             $this->info("$fileName created!");
-        } elseif ($class['name'] === Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME || $class['name'] === Constants::EXISTING_ROUTES_FILE_NAME) {
-            if (! $this->dataAlreadyInsertedInFile($class, $modelName)) {
-                $class['append'] ? file_put_contents($basePath, $class['append'], FILE_APPEND) : file_put_contents($basePath, $stubFileWithContents);
+        } elseif ($file['name'] === Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME || $file['name'] === Constants::EXISTING_ROUTES_FILE_NAME) {
+            if (! $this->dataAlreadyInsertedInFile($file, $modelName)) {
+                $file['append'] ? file_put_contents($basePath, $file['append'], FILE_APPEND) : file_put_contents($basePath, $stubFileWithContents);
                 $this->info("$fileName updated!");
             } else {
                 $this->info("Data already inserted in $fileName");

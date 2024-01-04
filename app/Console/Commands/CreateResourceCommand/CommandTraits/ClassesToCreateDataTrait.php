@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 trait ClassesToCreateDataTrait
 {
-    private function getDataToCreateClasses(string $modelName, bool $includeRepository): array
+    private function getDataToCreateFiles(string $modelName, bool $includeRepository): array
     {
         $controllerStubFile = $includeRepository ? Constants::REPOSITORY_CONTROLLER_STUB : Constants::CONTROLLER_STUB;
         $existingRepositoryServiceProvider = Constants::REPOSITORY_SERVICE_PROVIDER_PATH . '/' . Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME;
