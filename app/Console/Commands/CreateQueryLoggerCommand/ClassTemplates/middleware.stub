@@ -20,7 +20,8 @@ class QueryLogger
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (config('app.env') === 'local') {
+        if (config('app.env') === config('app.query_logger_env')) {
+            $queryPerformance = '';
             $memoryBefore = memory_get_usage();
 
             DB::listen(function ($query) use (&$log, &$sqlQuery) {
@@ -32,14 +33,17 @@ class QueryLogger
             $memoryAfter = memory_get_usage();
             $memoryUsed = $memoryAfter - $memoryBefore;
 
-            // low performance query config('app.low_perf_query')  LOW_PERF_QUERY_MEMORY LOW_PERF_QUERY_TIME
-            if ($memoryUsed > 12000000 && floatval($log['Execution time']) > 20) { // 1,5MB & 20ms
-                $log['Request memory'] = $this->formatUsedMemory($memoryUsed);
-                Log::stack(['database_query_log'])->info(json_encode([$log, $sqlQuery]));
+            if ($memoryUsed < config('app.high_performance_query_memory') && floatval($log['Execution time']) < config('app.high_performance_query_time')) {
+                $queryPerformance = 'high_performing_query';
+            } else if ($memoryUsed < config('app.mid_performance_query_memory') && floatval($log['Execution time']) < config('app.mid_performance_query_time')) {
+                $queryPerformance = 'mid_performing_query';
+            } else if ($memoryUsed >= config('app.low_performance_query_memory') && floatval($log['Execution time']) >= config('app.low_performance_query_time')) {
+                $queryPerformance = 'low_performing_query';
             }
-            // mid performance query
-            // high performance query
 
+            $log['Request memory'] = $this->formatUsedMemory($memoryUsed);
+            $log['Query performance'] = $queryPerformance;
+            Log::stack(['database_query_log'])->info(json_encode([$log, $sqlQuery]));
 
             DB::flushQueryLog();
         } else {

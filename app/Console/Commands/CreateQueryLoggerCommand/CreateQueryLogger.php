@@ -17,8 +17,8 @@ class CreateQueryLogger extends Command
 
         $this->createMiddleware($queryLoggerName);
         $this->createRoute($queryLoggerName);
+        $this->addEnvVariables();
 
-        // TODO: Append the key variables in .env
         // TODO: Add logic to the controller to fetch query logs by specific search criteria
         // TODO: Add middleware to Kernel.php
         // TODO: Add a log channel to logging.php
@@ -34,6 +34,62 @@ class CreateQueryLogger extends Command
             $contents = file_get_contents(base_path('app/Console/Commands/CreateQueryLoggerCommand/ClassTemplates/middleware.stub'));
             file_put_contents(base_path('app/Http/Middleware') . '/' . $queryLoggerName . '.php', $contents);
             $this->info('Query logger middleware created!');
+        }
+    }
+
+    // TODO: Finish this method
+    private function addMiddlewareToKernel(string $queryLoggerName): void
+    {
+        $fileContents = file_get_contents(base_path('app/Http/Kernel.php'));
+        $middlewareExists = Str::contains($fileContents, $queryLoggerName);
+
+        if ($middlewareExists) {
+            $this->info('Query logger middleware already exists in Kernel.php!');
+        } else {
+            $middleware = "protected \$middleware = [
+        \App\Http\Middleware\{$queryLoggerName}::class,
+    ];";
+        }
+    }
+
+    private function addEnvVariables(): void
+    {
+        // TODO: Add default values to the variables in .env
+        // LOW_PERFORMANCE_QUERY_MEMORY = 30000000 && LOW_PERFORMANCE_QUERY_TIME = 100
+        // MID_PERFORMANCE_QUERY_MEMORY = 20000000 && MID_PERFORMANCE_QUERY_TIME = 50
+        // HIGH_PERFORMANCE_QUERY_MEMORY = 12000000 && HIGH_PERFORMANCE_QUERY_TIME = 20
+        // QUERY_LOGGER_ENVIRONMENT query_logger_env
+        $envFileContents = file_get_contents(base_path('.env'));
+
+        $variablesToCheck = [
+            'QUERY_LOGGER_ENV',
+            'LOW_PERFORMANCE_QUERY_MEMORY',
+            'LOW_PERFORMANCE_QUERY_TIME',
+            'MID_PERFORMANCE_QUERY_MEMORY',
+            'MID_PERFORMANCE_QUERY_TIME',
+            'HIGH_PERFORMANCE_QUERY_MEMORY',
+            'HIGH_PERFORMANCE_QUERY_TIME'
+        ];
+
+        $missingVariables = false;
+
+        foreach ($variablesToCheck as $variable) {
+            if (!Str::contains($envFileContents, $variable)) {
+                $missingVariables = true;
+                if ($variable === 'QUERY_LOGGER_ENV') {
+                    $envFileContents .= "$variable=local\n";
+                    $this->info('QUERY_LOGGER_ENV added to .env!');
+                } else {
+                    $envFileContents .= "$variable=\n";
+                    $this->info("$variable added to .env!");
+                }
+            }
+        }
+
+        if ($missingVariables) {
+            file_put_contents(base_path('.env'), $envFileContents);
+        } else {
+            $this->info('All query logger environment variables already exist in .env!');
         }
     }
 
