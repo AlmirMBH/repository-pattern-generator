@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\CreateQueryLoggerCommand;
 
+use App\Console\Commands\CreateQueryLoggerCommand\Constants\Constants;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -16,12 +17,15 @@ class CreateQueryLogger extends Command
         $queryLoggerName = ucfirst($this->argument('name'));
 
         $this->createMiddleware($queryLoggerName);
-        $this->createRoute($queryLoggerName);
-        $this->addEnvVariables();
+        $this->addMiddlewareToKernel($queryLoggerName);
+        $this->addLoggingChannelToLogging($queryLoggerName);
+        $this->addMiddlewareAndRoute($queryLoggerName);
+//        $this->addEnvVariableKeys();
+        $this->addEnvVariables($queryLoggerName);
 
         // TODO: Add logic to the controller to fetch query logs by specific search criteria
-        // TODO: Add middleware to Kernel.php
-        // TODO: Add a log channel to logging.php
+        // TODO: Add keys to app.php for query logger environment variables
+        // TODO: Add a web route and admin panel to monitor queries
     }
 
     private function createMiddleware(string $queryLoggerName): void
@@ -29,71 +33,100 @@ class CreateQueryLogger extends Command
         $fileExists = file_exists(base_path('app/Http/Middleware') . '/' . $queryLoggerName . '.php');
 
         if ($fileExists) {
-            $this->info('Query logger middleware already exists!');
+            $this->info("$queryLoggerName middleware already exists!");
         } else {
             $contents = file_get_contents(base_path('app/Console/Commands/CreateQueryLoggerCommand/ClassTemplates/middleware.stub'));
             file_put_contents(base_path('app/Http/Middleware') . '/' . $queryLoggerName . '.php', $contents);
-            $this->info('Query logger middleware created!');
+            $this->info("$queryLoggerName middleware created successfully!");
         }
     }
 
-    // TODO: Finish this method
     private function addMiddlewareToKernel(string $queryLoggerName): void
     {
-        $fileContents = file_get_contents(base_path('app/Http/Kernel.php'));
-        $middlewareExists = Str::contains($fileContents, $queryLoggerName);
+        $aliasName = Str::camel($queryLoggerName);
+        $middlewareClass = "\\App\\Http\\Middleware\\{$queryLoggerName}::class";
+        $middlewareLineForApi = "\t\t\t\\App\\Http\\Middleware\\{$queryLoggerName}::class,";
+        $aliasLine = "\t\t'{$aliasName}' => {$middlewareClass}";
 
-        if ($middlewareExists) {
-            $this->info('Query logger middleware already exists in Kernel.php!');
-        } else {
-            $middleware = "protected \$middleware = [
-        \App\Http\Middleware\{$queryLoggerName}::class,
-    ];";
+        $kernelFilePath = base_path('app/Http/Kernel.php');
+        $kernelFileContents = file_get_contents($kernelFilePath);
+
+        if (strpos($kernelFileContents, $queryLoggerName)) {
+            $this->info("$queryLoggerName middleware already exists in api middleware group!");
+            return;
         }
+
+        $kernelFileContentsWithApi = preg_replace('/(\'api\'\s*=>\s*\[\s*)(.*?)(\s*\],)/s', "'api' => [\n$2\n$middlewareLineForApi],", $kernelFileContents);
+        $updatedKernelFileContents = preg_replace('/(protected\s*\$middlewareAliases\s*=\s*\[\s*)(.*?)(\s*\];)/s', "$1\n$2\n$aliasLine\n$3", $kernelFileContentsWithApi);
+
+        file_put_contents($kernelFilePath, $updatedKernelFileContents);
+        $this->info("$queryLoggerName middleware added to Kernel.php!");
     }
 
-    private function addEnvVariables(): void
+    private function addLoggingChannelToLogging(string $queryLoggerName): void
     {
-        // TODO: Add default values to the variables in .env
-        // LOW_PERFORMANCE_QUERY_MEMORY = 30000000 && LOW_PERFORMANCE_QUERY_TIME = 100
-        // MID_PERFORMANCE_QUERY_MEMORY = 20000000 && MID_PERFORMANCE_QUERY_TIME = 50
-        // HIGH_PERFORMANCE_QUERY_MEMORY = 12000000 && HIGH_PERFORMANCE_QUERY_TIME = 20
-        // QUERY_LOGGER_ENVIRONMENT query_logger_env
+        $queryLoggerNameSnakeCase = Str::snake($queryLoggerName);
+        $loggingConfigPath = config_path('logging.php');
+        $loggingConfigContents = file_get_contents($loggingConfigPath);
+
+        if (strpos($loggingConfigContents, $queryLoggerNameSnakeCase)) {
+            $this->info("$queryLoggerName channel already exists in logging.php.");
+            return;
+        }
+
+        $newChannelConfig = "'$queryLoggerNameSnakeCase' => [
+                'driver' => 'single',
+                'path' => storage_path('logs/' . config('app.query_logs_file_name')),
+                'days' => config('app.keep_query_logs_days'),
+                'level' => 'debug',
+            ],
+        ";
+
+        $newLoggingConfig = preg_replace('/(\'channels\'\s*=>\s*\[\s*.*?)\s*(\'stack\'\s*=>\s*\[.*?)\s*(\],)/s', "$1$newChannelConfig$2$3", $loggingConfigContents);
+
+        file_put_contents($loggingConfigPath, $newLoggingConfig);
+
+        $this->info('Query log channel added to logging.php successfully!');
+    }
+
+    private function addEnvVariables(string $queryLoggerName): void
+    {
+        $queryLoggerNameSnakeCase = Str::snake($queryLoggerName);
+        $queryLoggerVariables = '';
+        $missingVariables = false;
+        $infoMessage = [];
+
         $envFileContents = file_get_contents(base_path('.env'));
 
         $variablesToCheck = [
-            'QUERY_LOGGER_ENV',
-            'LOW_PERFORMANCE_QUERY_MEMORY',
-            'LOW_PERFORMANCE_QUERY_TIME',
-            'MID_PERFORMANCE_QUERY_MEMORY',
-            'MID_PERFORMANCE_QUERY_TIME',
-            'HIGH_PERFORMANCE_QUERY_MEMORY',
-            'HIGH_PERFORMANCE_QUERY_TIME'
+            Constants::QUERY_LOGGER_ENVIRONMENT => Constants::QUERY_LOGGER_ENVIRONMENT . "=local\n",
+            Constants::QUERY_LOG_FILE_NAME => Constants::QUERY_LOG_FILE_NAME . "=$queryLoggerNameSnakeCase.log\n",
+            Constants::KEEP_QUERY_LOGS_DAYS => Constants::KEEP_QUERY_LOGS_DAYS . "=14\n",
+            Constants::LOW_PERFORMANCE_QUERY_MEMORY => Constants::LOW_PERFORMANCE_QUERY_MEMORY . "=30000000\n",
+            Constants::LOW_PERFORMANCE_QUERY_TIME => Constants::LOW_PERFORMANCE_QUERY_TIME . "=100\n",
+            Constants::MID_PERFORMANCE_QUERY_MEMORY  => Constants::MID_PERFORMANCE_QUERY_MEMORY . "=20000000\n",
+            Constants::MID_PERFORMANCE_QUERY_TIME => Constants::MID_PERFORMANCE_QUERY_TIME . "=50\n",
+            Constants::HIGH_PERFORMANCE_QUERY_MEMORY => Constants::HIGH_PERFORMANCE_QUERY_MEMORY . "=12000000\n",
+            Constants::HIGH_PERFORMANCE_QUERY_TIME => Constants::HIGH_PERFORMANCE_QUERY_TIME . "=20\n",
         ];
 
-        $missingVariables = false;
-
-        foreach ($variablesToCheck as $variable) {
+        foreach ($variablesToCheck as $variable => $value) {
             if (!Str::contains($envFileContents, $variable)) {
                 $missingVariables = true;
-                if ($variable === 'QUERY_LOGGER_ENV') {
-                    $envFileContents .= "$variable=local\n";
-                    $this->info('QUERY_LOGGER_ENV added to .env!');
-                } else {
-                    $envFileContents .= "$variable=\n";
-                    $this->info("$variable added to .env!");
-                }
+                $queryLoggerVariables .= $value;
+                $infoMessage[] = $variable;
             }
         }
 
         if ($missingVariables) {
-            file_put_contents(base_path('.env'), $envFileContents);
+            file_put_contents(base_path('.env'), $envFileContents . $queryLoggerVariables);
+            $this->info("Query logger environment variables: " . implode(', ', $infoMessage) . " added to .env!");
         } else {
             $this->info('All query logger environment variables already exist in .env!');
         }
     }
 
-    private function createRoute(string $queryLoggerName): void
+    private function addMiddlewareAndRoute(string $queryLoggerName): void
     {
         $routesPrefix = str_replace('_', '-', Str::snake($queryLoggerName));
         $queryLoggerCamelCaseName = Str::camel($queryLoggerName);

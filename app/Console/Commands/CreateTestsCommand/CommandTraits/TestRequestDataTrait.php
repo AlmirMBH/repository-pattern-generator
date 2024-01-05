@@ -134,12 +134,12 @@ trait TestRequestDataTrait
         $arrayConverted = implode(', ', array_map(function ($key, $value) use ($array) {
             return is_array($value)
                 ? $this->convertArrayToString($value)
-                : "'$key' => " . (is_string($value) ? "'$value'" : $value);
+                : "\t\t\t'$key' => " . (is_string($value) ? "'$value'" : $value);
 
         }, array_keys($array), $array));
 
         $arrayConverted = str_replace(', ', ",\n", $arrayConverted);
 
-        return "[\n$arrayConverted\n]";
+        return "[\n$arrayConverted\n\t\t]";
     }
 }
