@@ -26,6 +26,7 @@ class CreateQueryLogger extends Command
         // TODO: Add logic to the controller to fetch query logs by specific search criteria
         // TODO: Add a web route and admin panel to monitor queries
         // TODO: Make sure name of the log file is always passed to the controller via .env file
+        // TODO: Write logs as JSON objects
     }
 
     private function createMiddleware(string $queryLoggerName): void

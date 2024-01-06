@@ -43,7 +43,7 @@ class QueryLogger
 
             $log['Request memory'] = $this->formatUsedMemory($memoryUsed);
             $log['Query performance'] = $queryPerformance;
-            Log::stack(['database_query_log'])->info(json_encode([$log, $sqlQuery]));
+            Log::stack([config('app.query_logs_file_name')])->info(json_encode([$log, $sqlQuery]));
 
             DB::flushQueryLog();
         } else {
