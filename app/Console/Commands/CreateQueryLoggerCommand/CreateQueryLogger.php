@@ -18,14 +18,14 @@ class CreateQueryLogger extends Command
 
         $this->createMiddleware($queryLoggerName);
         $this->addMiddlewareToKernel($queryLoggerName);
-        $this->addLoggingChannelToLogging($queryLoggerName);
+        $this->addLoggingChannel($queryLoggerName);
         $this->addMiddlewareAndRoute($queryLoggerName);
-//        $this->addEnvVariableKeys();
+        $this->addEnvVariableKeys($queryLoggerName);
         $this->addEnvVariables($queryLoggerName);
 
         // TODO: Add logic to the controller to fetch query logs by specific search criteria
-        // TODO: Add keys to app.php for query logger environment variables
         // TODO: Add a web route and admin panel to monitor queries
+        // TODO: Make sure name of the log file is always passed to the controller via .env file
     }
 
     private function createMiddleware(string $queryLoggerName): void
@@ -63,7 +63,7 @@ class CreateQueryLogger extends Command
         $this->info("$queryLoggerName middleware added to Kernel.php!");
     }
 
-    private function addLoggingChannelToLogging(string $queryLoggerName): void
+    private function addLoggingChannel(string $queryLoggerName): void
     {
         $queryLoggerNameSnakeCase = Str::snake($queryLoggerName);
         $loggingConfigPath = config_path('logging.php');
@@ -82,11 +82,50 @@ class CreateQueryLogger extends Command
             ],
         ";
 
+        // In the context of the preg_replace function and the regular expression provided, $1, $2, and $3 are capturing groups.
         $newLoggingConfig = preg_replace('/(\'channels\'\s*=>\s*\[\s*.*?)\s*(\'stack\'\s*=>\s*\[.*?)\s*(\],)/s', "$1$newChannelConfig$2$3", $loggingConfigContents);
 
         file_put_contents($loggingConfigPath, $newLoggingConfig);
 
         $this->info('Query log channel added to logging.php successfully!');
+    }
+
+    private function addEnvVariableKeys(string $queryLoggerName): void
+    {
+        $appConfigPath = base_path('config/app.php');
+        $appFileContents = file_get_contents($appConfigPath);
+        $missingVariables = false;
+        $queryLoggerVariables = '';
+        $infoMessage = [];
+
+        $variablesToCheck = [
+            Constants::QUERY_LOGGER_ENVIRONMENT_KEY => 'QUERY_LOGGER_ENVIRONMENT',
+            Constants::QUERY_LOG_FILE_NAME_KEY => 'QUERY_LOG_FILE_NAME',
+            Constants::KEEP_QUERY_LOGS_DAYS_KEY => 'KEEP_QUERY_LOGS_DAYS',
+            Constants::HIGH_PERFORMANCE_QUERY_MEMORY_KEY => 'HIGH_PERFORMANCE_QUERY_MEMORY',
+            Constants::HIGH_PERFORMANCE_QUERY_TIME_KEY => 'HIGH_PERFORMANCE_QUERY_TIME',
+            Constants::MID_PERFORMANCE_QUERY_MEMORY_KEY => 'MID_PERFORMANCE_QUERY_MEMORY',
+            Constants::MID_PERFORMANCE_QUERY_TIME_KEY => 'MID_PERFORMANCE_QUERY_TIME',
+            Constants::LOW_PERFORMANCE_QUERY_MEMORY_KEY => 'LOW_PERFORMANCE_QUERY_MEMORY',
+            Constants::LOW_PERFORMANCE_QUERY_TIME_KEY => 'LOW_PERFORMANCE_QUERY_TIME'
+        ];
+
+        foreach ($variablesToCheck as $key => $value) {
+            if (!Str::contains($appFileContents, $key)) {
+                $missingVariables = true;
+                $queryLoggerVariables .= "\n\t'$key' => env('$value'),";
+                $infoMessage[] = $key;
+            }
+        }
+
+        if (!$missingVariables) {
+            $this->info("All $queryLoggerName environment variable keys already exist in app.php!");
+            return;
+        }
+
+        $newAppConfig = preg_replace('/(\s*\]\s*(?:;|\)\s*;))/s', "$queryLoggerVariables$1", $appFileContents);
+        file_put_contents($appConfigPath, $newAppConfig);
+        $this->info("$queryLoggerName environment variables: " . implode(', ', $infoMessage) . " added to app.php!");
     }
 
     private function addEnvVariables(string $queryLoggerName): void
@@ -120,9 +159,9 @@ class CreateQueryLogger extends Command
 
         if ($missingVariables) {
             file_put_contents(base_path('.env'), $envFileContents . $queryLoggerVariables);
-            $this->info("Query logger environment variables: " . implode(', ', $infoMessage) . " added to .env!");
+            $this->info("$queryLoggerName environment variables: " . implode(', ', $infoMessage) . " added to .env!");
         } else {
-            $this->info('All query logger environment variables already exist in .env!');
+            $this->info("All $queryLoggerName environment variables already exist in .env!");
         }
     }
 
@@ -134,7 +173,7 @@ class CreateQueryLogger extends Command
         $middlewareAndRouteExists = $this->dataAlreadyInsertedInFile($queryLoggerName);
 
         if ($middlewareAndRouteExists) {
-            $this->info('Query logger route already exists in api.php!');
+            $this->info("$queryLoggerName route already exists in api.php!");
         } else {
             $middlewareAndRoute =
                 "Route::middleware('{$queryLoggerCamelCaseName}')->group(function(){
@@ -146,7 +185,7 @@ class CreateQueryLogger extends Command
 });";
 
         file_put_contents(base_path('routes/api.php'), $middlewareAndRoute, FILE_APPEND);
-        $this->info('Query logger route added to api.php!');
+        $this->info("$queryLoggerName route added to api.php!");
         }
     }
 
