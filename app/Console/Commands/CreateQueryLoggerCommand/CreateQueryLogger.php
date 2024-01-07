@@ -27,6 +27,7 @@ class CreateQueryLogger extends Command
         // TODO: Write logs as JSON objects; use ksort (array) and do not write matrix logs
         // TODO: Add logic to the controller to fetch query logs via .env file by specific search criteria
         // TODO: Add a web route and admin panel to monitor queries
+        // TODO: If controller e.g. Car exists, a query logger with the same name cannot be created; fix it
     }
 
     private function createMiddleware(string $queryLoggerName): void
@@ -79,7 +80,7 @@ class CreateQueryLogger extends Command
                 "Route::middleware('{$queryLoggerCamelCaseName}')->group(function(){
     Route::controller(App\Http\Controllers\Api\\" . $queryLoggerName . "Controller::class)->group(function () {
          Route::prefix('$routesPrefix')->group(function () {
-            Route::post('/query-logs', 'getLogs')->name('getQueryLogs');
+            Route::get('/query-logs', 'getLogs')->name('getQueryLogs');
         });
     });
 });";
