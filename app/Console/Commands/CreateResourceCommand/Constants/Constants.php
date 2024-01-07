@@ -23,7 +23,7 @@ class Constants
     public const CUSTOM_REPOSITORY_STUB = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/repository.stub';
     public const REPOSITORY_SERVICE_STUB = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/service.stub';
     public const REPOSITORY_CONTROLLER_STUB = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/repository_controller.stub';
-    public const CONTROLLER_STUB = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/controller.stub';
+    public const CONTROLLER_STUB = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/query_logger_controller.stub';
     public const REPOSITORY_SERVICE_PROVIDER_STUB_PATH = 'app/Console/Commands/CreateResourceCommand/ClassTemplates/repository_service_provider.stub';
 
     /**

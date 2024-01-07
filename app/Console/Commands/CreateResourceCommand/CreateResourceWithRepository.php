@@ -11,26 +11,14 @@ use Illuminate\Support\Str;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
-class CreateResourceWithRepositoryCommand extends Command
+class CreateResourceWithRepository extends Command
 {
     use CreateDataAccessLayerFoldersTrait;
     use ClassesToCreateDataTrait;
     use CommandTraits\ModelValidationTrait;
 
-    // TODO: Add tests, record not found for update, delete, show and all
-    // TODO: Enable json and enum columns in the test stub
-    // TODO: Format arrays in the test stub (indentation)
-    // TODO: Export Postman collection for all endpoints
     // TODO: Add PHPDoc to all classes
     // TODO: Create tests for the resource commands (in package)
-    // TODO: Create a package (starter kit)
-
-    // TODO: Readme
-    // TODO: Mass assignment columns must be specified in the model; otherwise tests will fail
-    // TODO: DB seeding must be done manually every time after tests are run, if not using a testing DB
-    // TODO: Explain what column types can be tested
-    // TODO: A testing DB needs to be set in phpunit.xml and .env.testing
-    // TODO: The code might be the same in some commands; the purpose is easy copying and pasting only what you need
     protected $signature = 'make:resource {name : The name of the Eloquent model} {--repository : Include a repository}';
     protected $description = 'Generate a resource with an optional repository';
 
@@ -105,7 +93,7 @@ class CreateResourceWithRepositoryCommand extends Command
             $this->info("$fileName created!");
         } elseif ($file['name'] === Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME || $file['name'] === Constants::EXISTING_ROUTES_FILE_NAME) {
             if (! $this->dataAlreadyInsertedInFile($file, $modelName)) {
-                $file['append'] ? file_put_contents($basePath, $file['append'], FILE_APPEND) : file_put_contents($basePath, $stubFileWithContents);
+                $file['append'] ? file_put_contents($basePath, "\n" . $file['append'], FILE_APPEND) : file_put_contents($basePath, $stubFileWithContents);
                 $this->info("$fileName updated!");
             } else {
                 $this->info("Data already inserted in $fileName");

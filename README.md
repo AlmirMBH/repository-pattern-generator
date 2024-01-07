@@ -64,3 +64,14 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+
+Mass assignment columns must be specified in the model; otherwise tests will fail
+DB seeding must be done manually every time after tests are run, if not using a testing DB
+Explain what column types can be tested
+A testing DB needs to be set in phpunit.xml and .env.testing
+The code might be the same in some commands; the purpose is easy copying and pasting only what you need
+If no DB connection and table a request is directed to, the logger will throw an error.
+Migration is created, if no such table exists. If the table exists, the migration will not be
+crated

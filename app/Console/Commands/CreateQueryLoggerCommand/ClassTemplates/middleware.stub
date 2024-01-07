@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
-class QueryLogger
+class {{ middlewareName }}
 {
     /**
      * Handle an incoming request.
@@ -20,15 +20,23 @@ class QueryLogger
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $createLog = false;
+
         if (config('app.env') === config('app.query_logger_environment')) {
             $queryPerformance = '';
             $memoryBefore = memory_get_usage();
 
-            DB::listen(function ($query) use (&$log, &$sqlQuery) {
+            // If no DB query executed for whatever reason the listen function will not be called
+            DB::listen(function ($query) use (&$log, &$sqlQuery, &$createLog) {
                 [$log, $sqlQuery] = $this->getLogAndSqlQuery($query);
+                $createLog = true;
             });
 
             $response = $next($request);
+
+            if (!$createLog) {
+                return $response;
+            }
 
             $memoryAfter = memory_get_usage();
             $memoryUsed = $memoryAfter - $memoryBefore;
@@ -43,7 +51,7 @@ class QueryLogger
 
             $log['Request memory'] = $this->formatUsedMemory($memoryUsed);
             $log['Query performance'] = $queryPerformance;
-            Log::stack([config('app.query_logs_file_name')])->info(json_encode([$log, $sqlQuery]));
+            Log::stack([config('app.query_logger_channel')])->info(json_encode([$log, $sqlQuery]));
 
             DB::flushQueryLog();
         } else {
