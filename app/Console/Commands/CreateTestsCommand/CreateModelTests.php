@@ -18,7 +18,6 @@ class CreateModelTests extends Command
 
     public function handle(): void
     {
-        // TODO: Add tests, record not found for update, delete, show and all
         // TODO: Enable json and enum columns in the test stub
 
         $modelName = ucfirst($this->argument('name'));

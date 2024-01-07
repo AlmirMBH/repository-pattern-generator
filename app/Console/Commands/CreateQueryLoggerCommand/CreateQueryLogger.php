@@ -24,7 +24,6 @@ class CreateQueryLogger extends Command
         $this->addEnvVariables($queryLoggerName);
         $this->addEnvVariableKeys($queryLoggerName);
 
-        // TODO: Write logs as JSON objects; use ksort (array) and do not write matrix logs
         // TODO: Add logic to the controller to fetch query logs via .env file by specific search criteria
         // TODO: Add a web route and admin panel to monitor queries
         // TODO: If controller e.g. Car exists, a query logger with the same name cannot be created; fix it
