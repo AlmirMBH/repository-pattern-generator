@@ -49,7 +49,7 @@ class CreateQueryLogger extends Command
         $aliasName = Str::camel($queryLoggerName);
         $middlewareClass = "\\App\\Http\\Middleware\\{$queryLoggerName}::class";
         $middlewareLineForApi = "\t\t\t\\App\\Http\\Middleware\\{$queryLoggerName}::class,";
-        $aliasLine = "\t\t'{$aliasName}' => {$middlewareClass}";
+        $aliasLine = "\t\t'{$aliasName}' => {$middlewareClass},";
 
         $kernelFilePath = base_path('app/Http/Kernel.php');
         $kernelFileContents = file_get_contents($kernelFilePath);

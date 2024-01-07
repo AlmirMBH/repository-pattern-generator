@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -27,8 +26,9 @@ class {{ middlewareName }}
             $memoryBefore = memory_get_usage();
 
             // If no DB query executed for whatever reason the listen function will not be called
-            DB::listen(function ($query) use (&$log, &$sqlQuery, &$createLog) {
-                [$log, $sqlQuery] = $this->getLogAndSqlQuery($query);
+            DB::listen(function ($query) use (&$createLog, &$logData, &$executionTime) {
+                $logData = (array) $query;
+                $executionTime = $query->time;
                 $createLog = true;
             });
 
@@ -41,17 +41,18 @@ class {{ middlewareName }}
             $memoryAfter = memory_get_usage();
             $memoryUsed = $memoryAfter - $memoryBefore;
 
-            if ($memoryUsed < config('app.high_performance_query_memory') && floatval($log['Execution time']) < config('app.high_performance_query_time')) {
+            if ($memoryUsed < config('app.high_performance_query_memory') && floatval($executionTime) < config('app.high_performance_query_time')) {
                 $queryPerformance = 'high_performing_query';
-            } else if ($memoryUsed < config('app.mid_performance_query_memory') && floatval($log['Execution time']) < config('app.mid_performance_query_time')) {
+            } else if ($memoryUsed < config('app.mid_performance_query_memory') && floatval($executionTime) < config('app.mid_performance_query_time')) {
                 $queryPerformance = 'mid_performing_query';
-            } else if ($memoryUsed >= config('app.low_performance_query_memory') && floatval($log['Execution time']) >= config('app.low_performance_query_time')) {
+            } else if ($memoryUsed >= config('app.low_performance_query_memory') && floatval($executionTime) >= config('app.low_performance_query_time')) {
                 $queryPerformance = 'low_performing_query';
             }
 
-            $log['Request memory'] = $this->formatUsedMemory($memoryUsed);
-            $log['Query performance'] = $queryPerformance;
-            Log::stack([config('app.query_logger_channel')])->info(json_encode([$log, $sqlQuery]));
+            $logData['request_memory'] = $this->formatUsedMemory($memoryUsed);
+            $logData['query_performance'] = $queryPerformance;
+            $logData = $this->formatLogData($logData);
+            Log::stack([config('app.query_logger_channel')])->info(json_encode($logData));
 
             DB::flushQueryLog();
         } else {
@@ -61,31 +62,33 @@ class {{ middlewareName }}
         return $response;
     }
 
-    private function getLogAndSqlQuery(QueryExecuted $query): array
+    private function formatLogData(array $logData): array
     {
+        $connection = $logData['connection'];
+
         return [
-            [
-                'Route name' => request()->route()->getName(),
-                'Execution time' => $query->time . "ms",
-                'Bindings' => $query->bindings,
-                'Connection name' => $query->connectionName,
-                'Database' => $query->connection->getDatabaseName(),
-                'Host' => $query->connection->getConfig('host'),
-                'Port' => $query->connection->getConfig('port'),
-                'Driver' => $query->connection->getDriverName(),
-            ],
-            [
-                'SQL QUERY' => $query->sql
-            ]
+            'date' => date('Y-m-d H:i:s'),
+            'query_performance' => $logData['query_performance'],
+            'route_name' => request()->route()->getName(),
+            'execution_time' => $logData['time'] . "ms",
+            'request_memory' => $this->formatUsedMemory(memory_get_usage()),
+            'connection_name' => $logData['connectionName'],
+            'database_name' => $connection->getDatabaseName(),
+            'driver' => $connection->getDriverName(),
+            'host' => $connection->getConfig('host'),
+            'parameters' => $logData['bindings'],
+            'port' => $connection->getConfig('port'),
+            'sql_query' => $logData['sql']
         ];
     }
 
     private function formatUsedMemory(int $usedMemory): string
     {
-        $bytes = pow(1024, 2);
+        $oneMegabyte = pow(1024, 2);
 
-        return ($usedMemory > $bytes)
-            ? round($usedMemory / $bytes, 2) . "MB"
-            : round($usedMemory / 1024, 2) . "KB";
+        return ($usedMemory >= $oneMegabyte)
+            ? round($usedMemory / $oneMegabyte, 2) . "MB"
+            : round($usedMemory / 1024, 2) . " KB";
     }
 }
+

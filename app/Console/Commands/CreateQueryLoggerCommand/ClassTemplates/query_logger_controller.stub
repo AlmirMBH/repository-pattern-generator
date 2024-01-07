@@ -9,7 +9,13 @@ class {{ modelName }}Controller extends Controller
 {
     public function getLogs(Request $request)
     {
-        $logFilePath = storage_path('logs/'  . config('app.query_logs_file_name'));
-        return file_get_contents($logFilePath);
+        $logFileExists = file_exists(storage_path('logs/'  . config('app.query_logs_file_name')));
+
+        if ($logFileExists) {
+            $logFilePath = storage_path('logs/'  . config('app.query_logs_file_name'));
+            return file_get_contents($logFilePath);
+        }
+
+        return 'No logs found!';
     }
 }
