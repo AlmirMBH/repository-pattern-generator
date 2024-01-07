@@ -51,6 +51,17 @@ class {{ modelName }}ApiTest extends TestCase
                 }
     }
 
+    public function testGet{{ modelNamePlural }}NoDataFound(): void
+        {
+            $response = $this->getJson(
+                    uri: route(
+                        name: 'get{{ modelNamePlural }}'
+                    )
+                );
+
+            $response->assertStatus(200);
+        }
+
     public function testGet{{ modelName }}(): void
     {
         ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly({{ createRequestData }});
@@ -68,6 +79,18 @@ class {{ modelName }}ApiTest extends TestCase
         $response->assertJson($expectedCreateResponseData);
         $this->assertDatabaseHas('{{ databaseName }}', $expectedCreateResponseData);
     }
+
+    public function testGet{{ modelName }}NoDataFound(): void
+        {
+            $response = $this->getJson(
+                    uri: route(
+                        name: 'get{{ modelName }}',
+                        parameters: ['{{ modelVariableName }}Id' => 1]
+                    )
+                );
+
+            $response->assertStatus(404);
+        }
 
     public function testUpdate{{ modelName }}(): void
     {
@@ -90,6 +113,21 @@ class {{ modelName }}ApiTest extends TestCase
         $this->assertDatabaseHas('{{ databaseName }}', $expectedUpdateResponseData);
     }
 
+    public function testUpdate{{ modelName }}NoDataFound(): void
+        {
+            $updateRequestData = {{ updateRequestData }};
+
+            $response = $this->putJson(
+                    uri: route(
+                        name: 'update{{ modelName }}',
+                        parameters: ['{{ modelVariableName }}Id' => 1]
+                    ),
+                    data: $updateRequestData
+                );
+
+            $response->assertStatus(404);
+        }
+
     public function testDelete{{ modelName }}(): void
     {
         ${{ modelVariableName }} = {{ modelName }}::factory()->createQuietly({{ createRequestData }});
@@ -104,4 +142,16 @@ class {{ modelName }}ApiTest extends TestCase
         $response->assertStatus(200);
         $this->assertDatabaseMissing('{{ databaseName }}', {{ expectedCreateResponseData }});
     }
+
+    public function testDelete{{ modelName }}NoDataFound(): void
+        {
+            $response = $this->deleteJson(
+                    uri: route(
+                        name: 'delete{{ modelName }}',
+                        parameters: ['{{ modelVariableName }}Id' => 1]
+                    )
+                );
+
+            $response->assertStatus(404);
+        }
 }
