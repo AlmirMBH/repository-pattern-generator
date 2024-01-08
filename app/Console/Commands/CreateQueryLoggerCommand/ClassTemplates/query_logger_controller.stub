@@ -9,13 +9,38 @@ class {{ modelName }}Controller extends Controller
 {
     public function getLogs(Request $request)
     {
+        $decodedLogEntries = [];
+
         $logFileExists = file_exists(storage_path('logs/'  . config('app.query_logs_file_name')));
+        $logFilePath = storage_path('logs/'  . config('app.query_logs_file_name'));
 
         if ($logFileExists) {
-            $logFilePath = storage_path('logs/'  . config('app.query_logs_file_name'));
-            return file_get_contents($logFilePath);
+            $logContent = file_get_contents($logFilePath);
+            $logEntries = explode("\n", $logContent);
+
+            foreach ($logEntries as $logEntry) {
+                if (!empty($logEntry)) {
+                    // Remove the log prefix and decode the JSON data
+                    $jsonData = json_decode(substr($logEntry, strpos($logEntry, '{')), true);
+
+                    if ($jsonData) {
+                        $decodedLogEntries[] = $jsonData;
+                    }
+                }
+            }
         }
 
-        return 'No logs found!';
+        $groupedQueries = [];
+
+        foreach ($decodedLogEntries as $logEntry) {
+            $queryPerformance = $logEntry['query_performance'];
+            $timestamp = strtotime($logEntry['date']);
+            $date = date('Y-m-d', $timestamp);
+            $routeName = $logEntry['route_name'];
+
+            $groupedQueries[$routeName][$date][$queryPerformance][] = $logEntry;
+        }
+
+        return $groupedQueries;
     }
 }

@@ -9,6 +9,7 @@ trait ClassesToCreateDataTrait
 {
     private function getDataToCreateFiles(string $modelName, bool $includeRepository): array
     {
+        // TODO: Use a value object FileData instead of the array
         $controllerStubFile = $includeRepository ? Constants::REPOSITORY_CONTROLLER_STUB : Constants::CONTROLLER_STUB;
         $existingRepositoryServiceProvider = Constants::REPOSITORY_SERVICE_PROVIDER_PATH . '/' . Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME;
         $routeGroupController = ucfirst($modelName) . "Controller";

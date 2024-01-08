@@ -11,7 +11,9 @@ class CreateQueryLogger extends Command
     protected $signature = 'make:query-logger {name : Name of the query logger middleware}';
     protected $description = 'Command description';
 
-
+    // TODO: Group queries by: date, query performance, and then route name
+    // TODO: One graph to show e.g. high-performing queries time by date; each query represented by a curve
+    // TODO: One graph to show e.g. high-performing queries memory by date; each query represented by a curve
     public function handle(): void
     {
         $queryLoggerName = ucfirst($this->argument('name'));

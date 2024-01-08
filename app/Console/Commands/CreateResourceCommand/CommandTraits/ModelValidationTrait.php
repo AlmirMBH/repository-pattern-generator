@@ -24,6 +24,7 @@ trait ModelValidationTrait
 
     private function checkIfMigrationExists(string $modelName): bool
     {
+        // TODO: Check if migration file exists; then, if table in DB exists ask if user wants to create migration anyway
         $migrationName = Str::snake(Str::plural($modelName));
 
         $tableExists = Schema::hasTable($migrationName);
