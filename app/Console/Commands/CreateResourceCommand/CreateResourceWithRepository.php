@@ -93,7 +93,7 @@ class CreateResourceWithRepository extends Command
             $this->info("$fileName created!");
         } elseif ($file['name'] === Constants::REPOSITORY_SERVICE_PROVIDER_FILE_NAME || $file['name'] === Constants::EXISTING_ROUTES_FILE_NAME) {
             if (! $this->dataAlreadyInsertedInFile($file, $modelName)) {
-                $file['append'] ? file_put_contents($basePath, "\n" . $file['append'], FILE_APPEND) : file_put_contents($basePath, $stubFileWithContents);
+                isset($file['append']) ? file_put_contents($basePath, "\n" . $file['append'], FILE_APPEND) : file_put_contents($basePath, $stubFileWithContents);
                 $this->info("$fileName updated!");
             } else {
                 $this->info("Data already inserted in $fileName");
